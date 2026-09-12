@@ -1,0 +1,2 @@
+{{template "head" .Title}}<main><h1>Apps that finished the job</h1><p>{{.EntryCount}} entries</p>{{.Badges.Green}}{{.Badges.Amber}}{{.Badges.Red}}<p>The badge can look bad on purpose.</p><pre>{{range .InstallCommands}}{{.}}
+{{end}}</pre><a href="/wall">See the wall</a></main>{{template "footer" .}}

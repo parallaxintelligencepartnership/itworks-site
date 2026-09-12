@@ -1,0 +1,1 @@
+{{template "head" .Title}}<main><h1>{{.Entry.Name}}</h1><p>{{.Entry.Summary}}</p><img src="{{.Entry.BadgeURL}}" alt="badge {{.Entry.BadgeColor}}"><p>{{.Entry.AuditTier}} {{.Entry.AuditDate}} found {{.Entry.Found}} fixed {{.Entry.Fixed}} accepted {{.Entry.Accepted}} critical open {{.Entry.CriticalOpen}}</p></main>{{template "footer" .}}
