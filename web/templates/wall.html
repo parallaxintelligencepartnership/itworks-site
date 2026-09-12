@@ -1,1 +1,33 @@
-{{template "head" .Title}}<main><h1>The wall</h1>{{range .Entries}}<article><h2><a href="{{.EntryURL}}">{{.Name}}</a></h2><p>{{.Summary}}</p><p>{{.Source}} {{if .RepoURL}}<a href="{{.RepoURL}}">repo</a>{{end}} {{.AuditTier}} {{.AuditDate}} found {{.Found}} fixed {{.Fixed}} accepted {{.Accepted}} critical open {{.CriticalOpen}}</p><img src="{{.BadgeURL}}" alt="badge {{.BadgeColor}}"></article>{{else}}<p>Nothing here yet.</p>{{end}}</main>{{template "footer" .}}
+{{template "head" .Title}}
+<main id="main">
+<section class="section wrap" aria-labelledby="wall-heading">
+<h1 id="wall-heading">The wall</h1>
+<p class="lede">Every app here was built with the vibecheck plugin and finished through its closeout. Badges keep tracking each one after launch.</p>
+
+{{if .Entries}}
+<div class="grid">
+{{range .Entries}}
+<article class="card">
+<h2 class="card-title"><a href="{{.EntryURL}}">{{.Name}}</a></h2>
+<p class="card-summary">{{.Summary}}</p>
+<p class="card-meta">
+<span class="source-label">{{.Source}}</span>{{if .RepoURL}} <a href="{{.RepoURL}}">Repo</a>{{end}}
+</p>
+<p class="card-meta">Tier: {{.AuditTier}}. Date: {{.AuditDate}}.</p>
+<ul class="counts">
+<li><span class="count-label">Found</span><span class="count-value">{{.Found}}</span></li>
+<li><span class="count-label">Fixed</span><span class="count-value">{{.Fixed}}</span></li>
+<li><span class="count-label">Accepted</span><span class="count-value">{{.Accepted}}</span></li>
+<li><span class="count-label">Critical open</span><span class="count-value">{{.CriticalOpen}}</span></li>
+</ul>
+<p class="card-badge"><img class="badge-img" src="{{.BadgeURL}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open"></p>
+</article>
+{{end}}
+</div>
+{{else}}
+<p class="empty">No entries yet. Run a closeout and be the first on the wall.</p>
+{{end}}
+
+</section>
+</main>
+{{template "footer" .}}

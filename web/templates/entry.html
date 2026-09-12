@@ -1,1 +1,28 @@
-{{template "head" .Title}}<main><h1>{{.Entry.Name}}</h1><p>{{.Entry.Summary}}</p><img src="{{.Entry.BadgeURL}}" alt="badge {{.Entry.BadgeColor}}"><p>{{.Entry.AuditTier}} {{.Entry.AuditDate}} found {{.Entry.Found}} fixed {{.Entry.Fixed}} accepted {{.Entry.Accepted}} critical open {{.Entry.CriticalOpen}}</p></main>{{template "footer" .}}
+{{template "head" .Title}}
+<main id="main">
+<section class="section wrap" aria-labelledby="entry-heading">
+
+<article class="card card-solo">
+<h1 id="entry-heading" class="card-title">{{.Entry.Name}}</h1>
+<p class="card-summary">{{.Entry.Summary}}</p>
+<p class="card-meta">
+<span class="source-label">{{.Entry.Source}}</span>{{if .Entry.RepoURL}} <a href="{{.Entry.RepoURL}}">Repo</a>{{end}}
+</p>
+<p class="card-meta">Tier: {{.Entry.AuditTier}}. Date: {{.Entry.AuditDate}}.</p>
+<ul class="counts">
+<li><span class="count-label">Found</span><span class="count-value">{{.Entry.Found}}</span></li>
+<li><span class="count-label">Fixed</span><span class="count-value">{{.Entry.Fixed}}</span></li>
+<li><span class="count-label">Accepted</span><span class="count-value">{{.Entry.Accepted}}</span></li>
+<li><span class="count-label">Critical open</span><span class="count-value">{{.Entry.CriticalOpen}}</span></li>
+</ul>
+<p class="card-badge"><img class="badge-img" src="{{.Entry.BadgeURL}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open"></p>
+</article>
+
+<div class="readme-snippet">
+<h2>Add this badge to a README</h2>
+<pre class="code"><code>[![audit badge]({{.Entry.BadgeURL}})]({{.Entry.EntryURL}})</code></pre>
+</div>
+
+</section>
+</main>
+{{template "footer" .}}

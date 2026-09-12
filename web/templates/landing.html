@@ -1,2 +1,61 @@
-{{template "head" .Title}}<main><h1>Apps that finished the job</h1><p>{{.EntryCount}} entries</p>{{.Badges.Green}}{{.Badges.Amber}}{{.Badges.Red}}<p>The badge can look bad on purpose.</p><pre>{{range .InstallCommands}}{{.}}
-{{end}}</pre><a href="/wall">See the wall</a></main>{{template "footer" .}}
+{{template "head" .Title}}
+<main id="main">
+
+<section class="hero wrap">
+<h1>A wall for apps that finished the job.</h1>
+<p class="lede">itworks.dev is a public wall of apps that were built with the vibecheck plugin and carried all the way through its closeout. Every entry keeps a badge that watches the app after launch, not just on the day it shipped.</p>
+</section>
+
+<section class="section badges wrap" aria-labelledby="badges-heading">
+<h2 id="badges-heading">Three badge states</h2>
+<ul class="badge-list">
+<li class="badge-item badge-item-green">
+<span class="badge-sample">{{.Badges.Green}}</span>
+<span class="badge-text">Audited within the last 30 days with zero critical findings open.</span>
+</li>
+<li class="badge-item badge-item-amber">
+<span class="badge-sample">{{.Badges.Amber}}</span>
+<span class="badge-text">The audit has gone stale.</span>
+</li>
+<li class="badge-item badge-item-red">
+<span class="badge-sample">{{.Badges.Red}}</span>
+<span class="badge-text">A critical finding is open.</span>
+</li>
+</ul>
+<p class="callout">The badge can look bad on purpose.</p>
+<p>That is the honest part. The badge reports what is true right now, even when the true answer is amber or red.</p>
+</section>
+
+<section class="section install wrap" aria-labelledby="install-heading">
+<h2 id="install-heading">Install the plugin</h2>
+<pre class="code"><code>{{range .InstallCommands}}{{.}}
+{{end}}</code></pre>
+<p>The closeout process asks before it publishes anything to this site.</p>
+</section>
+
+<section class="section publish wrap" aria-labelledby="publish-heading">
+<h2 id="publish-heading">What gets published</h2>
+<ul class="publish-list">
+<li>The display name of the app.</li>
+<li>One line on what it does.</li>
+<li>A source label, public or closed, with a repo link only when the source is public.</li>
+<li>The audit tier and the audit date.</li>
+<li>How many findings were found, fixed, and accepted.</li>
+<li>How many critical findings are still open.</li>
+</ul>
+<p class="callout">Nothing else. No code, no file paths, no secrets, no environment.</p>
+</section>
+
+<section class="section model-note wrap" aria-labelledby="model-heading">
+<h2 id="model-heading">No model runs here</h2>
+<p>This site never runs a model. It only stores and displays closeout summaries. The work happens in visitors' own Claude Code sessions, on their own machines.</p>
+</section>
+
+<section class="section cta wrap" aria-labelledby="cta-heading">
+<h2 id="cta-heading">See what has shipped</h2>
+<p>{{.EntryCount}} entries have published a closeout so far.</p>
+<a class="button" href="/wall">Visit the wall</a>
+</section>
+
+</main>
+{{template "footer" .}}

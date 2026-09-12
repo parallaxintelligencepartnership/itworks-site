@@ -1,2 +1,31 @@
-{{define "head"}}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{.}}</title><link rel="stylesheet" href="/static/site.css"></head><body>{{end}}
-{{define "footer"}}<footer><p>itworks.dev stores closeout summaries and serves badges. It never runs a model.</p></footer></body></html>{{end}}
+{{define "head"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A public wall of apps that were built with the vibecheck plugin and finished through its closeout, each carrying a badge that tracks its audit status over time.">
+<title>{{.}}</title>
+<link rel="stylesheet" href="/static/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+<div class="wrap site-header-inner">
+<a class="brand" href="/">itworks.dev</a>
+<nav class="site-nav" aria-label="Main">
+<a href="/wall">The wall</a>
+</nav>
+</div>
+</header>
+{{end}}
+{{define "footer"}}<footer class="site-footer">
+<div class="wrap site-footer-inner">
+<p>itworks.dev stores closeout summaries and serves badges. It never runs a model.</p>
+<nav class="site-nav" aria-label="Footer">
+<a href="/">Home</a>
+<a href="/wall">The wall</a>
+</nav>
+</div>
+</footer>
+</body>
+</html>{{end}}
