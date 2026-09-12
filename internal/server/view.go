@@ -57,8 +57,8 @@ type AdminData struct {
 // InstallCommands is the exact, fixed pair of commands shown on the landing
 // page.
 var InstallCommands = []string{
-	"claude plugin marketplace add parallaxintelligencepartnership/vibecheck",
-	"claude plugin install vibecheck@vibecheck",
+	"claude plugin marketplace add parallaxintelligencepartnership/itworks",
+	"claude plugin install itworks@itworks",
 }
 
 func (s *Server) badgeURL(id string) string {

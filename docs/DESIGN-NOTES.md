@@ -15,4 +15,4 @@ Status: noted only. Build not started; Matt said "just note this".
 ## 2026-09-11, later: Matt's second round of notes on Ledger
 5. Far too much copy. "So much slop writing on that page it's unreadable. It's like 4 pages of reading content; nobody is going to sit around and read a novel." Cut the landing page to a fraction: short lines, no paragraphs, let the ledger and the badge do the talking.
 6. Needs a deeper showcase pass, "WOW mode": fluid, smooth as butter animations and scrolling, extra design touches leaning on new concepts for the modern web. Refine Ledger, do not tear it down. Ledger remains the choice.
-7. Plugin name: Matt is considering renaming vibecheck if the name is already in wide use elsewhere. Research pending; his call.
+7. Plugin name: Matt is considering renaming vibecheck if the name is already in wide use elsewhere. Research pending; his call. Decided 2026-09-11: renamed to itworks.

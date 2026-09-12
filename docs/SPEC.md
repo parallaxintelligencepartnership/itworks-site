@@ -79,7 +79,7 @@ type WallData    struct { Title string; Entries []EntryView }
 type EntryData   struct { Title string; Entry EntryView }
 type AdminData   struct { Title string; Pending, Approved, Hidden []EntryView }
 ```
-InstallCommands is exactly: `claude plugin marketplace add parallaxintelligencepartnership/vibecheck` and `claude plugin install vibecheck@vibecheck`.
+InstallCommands is exactly: `claude plugin marketplace add parallaxintelligencepartnership/itworks` and `claude plugin install itworks@itworks`.
 
 ## Publish payload (what the plugin sends, nothing else)
 ```json

@@ -1,7 +1,7 @@
 # Project: itworks
 
 ## What it is
-A wall of apps that were built with the vibecheck plugin and finished through its closeout, plus a README badge per app showing the audit date and open critical count. Precisely: a single Go binary serving a public HTML wall, a JSON submit endpoint, SVG badges, and an admin approval page, backed by one SQLite file. The site makes no model calls, ever.
+A wall of apps that were built with the itworks plugin and finished through its closeout, plus a README badge per app showing the audit date and open critical count. Precisely: a single Go binary serving a public HTML wall, a JSON submit endpoint, SVG badges, and an admin approval page, backed by one SQLite file. The site makes no model calls, ever.
 
 ## Who uses it
 the public - auth needed: yes, for the admin approval route only (Authentik forward-auth at Traefik); roles needed: yes: visitor (read wall, badges, entry pages), publisher (unauthenticated POST from a vibecheck closeout, entry hidden until approved), admin (Matt, approve or hide entries)
