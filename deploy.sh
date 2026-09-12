@@ -16,7 +16,7 @@ echo "==> syncing repo to ${REMOTE_HOST}:${REMOTE_DIR}"
 rsync -az \
   --exclude '.git' \
   --exclude 'data' \
-  --exclude '.vibecheck' \
+  --exclude '.itworks' \
   "${REPO_DIR}/" "${REMOTE_HOST}:${REMOTE_DIR}/"
 
 echo "==> building and starting on ${REMOTE_HOST}"

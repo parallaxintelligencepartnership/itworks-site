@@ -58,7 +58,7 @@ This re-syncs the older code to pi3 and rebuilds and restarts the container. The
 
 ## Post deploy checks from checkpoint 1
 
-Two findings can only be verified against the live Traefik route. Run both right after the first deploy and record the result in .vibecheck/REVIEWS.md.
+Two findings can only be verified against the live Traefik route. Run both right after the first deploy and record the result in .itworks/REVIEWS.md.
 
 1. Admin allowlist matches Authentik. Sign in as Matt and open https://itworks.dev/admin (expect 200). The value in ITWORKS_ADMIN_USERS must equal the X-authentik-username Traefik forwards; if the page is 403 for Matt, check the container log for `admin denied user=` and set the variable to that name in docker-compose.yml, then redeploy.
 2. Rate limiting keys on the real client. Traefik must overwrite X-Real-Ip. Proof:
