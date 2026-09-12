@@ -1,0 +1,39 @@
+{{template "head" .Title}}<main>
+<h1>Admin</h1>
+<section>
+<h2>Pending</h2>
+{{range .Pending}}<article>
+<h3>{{.Name}}</h3>
+<p>{{.Summary}}</p>
+<p>Source {{.Source}}{{if .RepoURL}} Repo {{.RepoURL}}{{end}} Tier {{.AuditTier}} Date {{.AuditDate}}</p>
+<p>Found {{.Found}} Fixed {{.Fixed}} Accepted {{.Accepted}} Critical open {{.CriticalOpen}}</p>
+<p>Id {{.ID}}</p>
+<form method="post" action="/admin/entries/{{.ID}}/approve"><button type="submit">Approve</button></form>
+<form method="post" action="/admin/entries/{{.ID}}/hide"><button type="submit">Hide</button></form>
+</article>{{else}}<p>Nothing pending.</p>{{end}}
+</section>
+<section>
+<h2>Approved</h2>
+{{range .Approved}}<article>
+<h3>{{.Name}}</h3>
+<p>{{.Summary}}</p>
+<p>Source {{.Source}}{{if .RepoURL}} Repo {{.RepoURL}}{{end}} Tier {{.AuditTier}} Date {{.AuditDate}}</p>
+<p>Found {{.Found}} Fixed {{.Fixed}} Accepted {{.Accepted}} Critical open {{.CriticalOpen}}</p>
+<p>Id {{.ID}}</p>
+<form method="post" action="/admin/entries/{{.ID}}/approve"><button type="submit">Approve</button></form>
+<form method="post" action="/admin/entries/{{.ID}}/hide"><button type="submit">Hide</button></form>
+</article>{{else}}<p>Nothing approved yet.</p>{{end}}
+</section>
+<section>
+<h2>Hidden</h2>
+{{range .Hidden}}<article>
+<h3>{{.Name}}</h3>
+<p>{{.Summary}}</p>
+<p>Source {{.Source}}{{if .RepoURL}} Repo {{.RepoURL}}{{end}} Tier {{.AuditTier}} Date {{.AuditDate}}</p>
+<p>Found {{.Found}} Fixed {{.Fixed}} Accepted {{.Accepted}} Critical open {{.CriticalOpen}}</p>
+<p>Id {{.ID}}</p>
+<form method="post" action="/admin/entries/{{.ID}}/approve"><button type="submit">Approve</button></form>
+<form method="post" action="/admin/entries/{{.ID}}/hide"><button type="submit">Hide</button></form>
+</article>{{else}}<p>Nothing hidden.</p>{{end}}
+</section>
+</main>{{template "footer" .}}
