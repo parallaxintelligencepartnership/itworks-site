@@ -15,23 +15,29 @@ const (
 	ColorRed   = "red"
 )
 
-// hex values for each badge color, plus the fixed label background and text.
+// hex values for each badge color, plus the fixed label plate and text
+// colors.
 const (
 	hexGreen    = "#1a7f37"
 	hexAmber    = "#d29922"
 	hexRed      = "#b3261e"
-	hexLabel    = "#24292f"
+	hexLabel    = "#1f1f1f"
 	hexText     = "#ffffff"
 	hexAmberInk = "#1f1f1f"
+	hexHairline = "#000000"
 )
 
 const (
-	badgeHeight   = 20
-	charWidth     = 6.5
-	segPadPerSide = 10.0
-	fontFamily    = "Verdana,Geneva,DejaVu Sans,sans-serif"
-	fontSize      = 11
-	leftLabel     = "itworks.dev audit"
+	badgeHeight       = 20
+	charWidth         = 6.6
+	labelPad          = 10.0
+	fontFamily        = "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif"
+	fontSize          = 11
+	fontWeight        = 600
+	leftLabel         = "itworks.dev"
+	glyphCenterOffset = 15.0 // from left plate edge (leftW) to glyph cx
+	textStartOffset   = 32.0 // from left plate edge (leftW) to right-text x
+	trailingPad       = 12.0 // trailing space after right text
 )
 
 // Color returns "red", "amber", or "green" for the given audit date, open
@@ -71,48 +77,81 @@ func textHexFor(color string) string {
 	return hexText
 }
 
-func segWidth(s string) int {
-	return int(math.Round(float64(utf8.RuneCountInString(s))*charWidth)) + int(segPadPerSide*2)
+// textLen approximates the rendered width of s at 11px semibold in the
+// badge's system font stack, about 6.6px per character.
+func textLen(s string) float64 {
+	return math.Round(float64(utf8.RuneCountInString(s)) * charWidth)
 }
 
-// Render returns a flat, shields style SVG badge. date is the YYYY-MM-DD
-// audit date to display, criticalOpen the open critical count, and color one
-// of "green", "amber", "red" (the right segment fill).
+// glyph returns the SVG markup for the state glyph (disc, diamond, or
+// triangle) centered at (cx, cy=10), plus a data-shape attribute identifying
+// the shape for tests, and the fill color to use.
+func glyph(color string, cx float64) string {
+	switch color {
+	case ColorAmber:
+		// Diamond: half-diagonal 5.6, ink fill.
+		return fmt.Sprintf(`<path data-shape="diamond" d="M%.1f 4.4 %.1f 10 %.1f 15.6 %.1f 10Z" fill="%s"/>`,
+			cx, cx+5.6, cx, cx-5.6, hexAmberInk)
+	case ColorRed:
+		// Triangle, white fill.
+		return fmt.Sprintf(`<path data-shape="triangle" d="M%.1f 3.5 %.1f 14.4 %.1f 14.4Z" fill="%s"/>`,
+			cx, cx+5.8, cx-5.8, hexText)
+	default:
+		// Green: filled disc r 4.6, white fill.
+		return fmt.Sprintf(`<circle data-shape="disc" cx="%.1f" cy="10" r="4.6" fill="%s"/>`, cx, hexText)
+	}
+}
+
+// Render returns the Ledger style SVG badge (design source:
+// docs/design/ledger-mock-v2.html). date is the YYYY-MM-DD audit date to
+// display, criticalOpen the open critical count, and color one of "green",
+// "amber", "red" (the state plate fill).
 func Render(date string, criticalOpen int, color string) []byte {
 	var rightText, title string
 	if color == ColorAmber {
-		rightText = fmt.Sprintf("%s · stale · %d critical open", date, criticalOpen)
+		rightText = fmt.Sprintf("%s · %d critical · stale", date, criticalOpen)
 		title = fmt.Sprintf("Audit %s, stale, %d critical open, %s", date, criticalOpen, color)
 	} else {
-		rightText = fmt.Sprintf("%s · %d critical open", date, criticalOpen)
+		rightText = fmt.Sprintf("%s · %d critical", date, criticalOpen)
 		title = fmt.Sprintf("Audit %s, %d critical open, %s", date, criticalOpen, color)
 	}
-	rightHex := hexFor(color)
+	stateHex := hexFor(color)
 	rightTextHex := textHexFor(color)
 
-	leftW := segWidth(leftLabel)
-	rightW := segWidth(rightText)
+	labelLen := textLen(leftLabel)
+	leftW := int(math.Round(labelLen + labelPad*2))
+
+	rightLen := textLen(rightText)
+	rightW := int(math.Round(textStartOffset + rightLen + trailingPad))
+
 	totalW := leftW + rightW
 
-	leftCenter := leftW / 2
-	rightCenter := leftW + rightW/2
+	labelCenter := float64(leftW) / 2
+	glyphCX := float64(leftW) + glyphCenterOffset
+	textX := float64(leftW) + textStartOffset
 
-	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="%s">`+
-		`<title>%s</title>`+
+	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-labelledby="itworks-badge-title">`+
+		`<title id="itworks-badge-title">%s</title>`+
+		`<g shape-rendering="crispEdges">`+
 		`<rect width="%d" height="%d" fill="%s"/>`+
-		`<rect x="%d" width="%d" height="%d" fill="%s"/>`+
-		`<g font-family="%s" font-size="%d" text-anchor="middle">`+
-		`<text x="%d" y="14" fill="%s">%s</text>`+
-		`<text x="%d" y="14" fill="%s">%s</text>`+
+		`<rect width="%d" height="%d" fill="%s"/>`+
+		`<rect x="%d" width="1" height="%d" fill="%s" opacity=".22"/>`+
+		`</g>`+
+		`%s`+
+		`<g font-family="%s" font-size="%d" font-weight="%d">`+
+		`<text x="%.1f" y="14.2" fill="%s" text-anchor="middle" textLength="%.1f" lengthAdjust="spacingAndGlyphs">%s</text>`+
+		`<text x="%.1f" y="14.2" fill="%s" textLength="%.1f" lengthAdjust="spacingAndGlyphs">%s</text>`+
 		`</g>`+
 		`</svg>`,
-		totalW, badgeHeight, title,
+		totalW, badgeHeight,
 		title,
+		totalW, badgeHeight, stateHex,
 		leftW, badgeHeight, hexLabel,
-		leftW, rightW, badgeHeight, rightHex,
-		fontFamily, fontSize,
-		leftCenter, hexText, leftLabel,
-		rightCenter, rightTextHex, rightText,
+		leftW, badgeHeight, hexHairline,
+		glyph(color, glyphCX),
+		fontFamily, fontSize, fontWeight,
+		labelCenter, hexText, labelLen, leftLabel,
+		textX, rightTextHex, rightLen, rightText,
 	)
 	return []byte(svg)
 }

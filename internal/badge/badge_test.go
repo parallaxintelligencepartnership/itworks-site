@@ -46,7 +46,7 @@ func TestRenderContainsExpectedContent(t *testing.T) {
 	if !strings.Contains(svg, "2026-09-07") {
 		t.Errorf("render missing date: %s", svg)
 	}
-	if !strings.Contains(svg, "3 critical open") {
+	if !strings.Contains(svg, "3 critical") {
 		t.Errorf("render missing critical count: %s", svg)
 	}
 	if !strings.Contains(svg, hexRed) {
@@ -57,6 +57,31 @@ func TestRenderContainsExpectedContent(t *testing.T) {
 	}
 	if strings.Contains(svg, "http://") && !strings.Contains(svg, "www.w3.org") {
 		t.Errorf("render appears to reference an external resource: %s", svg)
+	}
+}
+
+func TestRenderContainsLabel(t *testing.T) {
+	for _, color := range []string{ColorGreen, ColorAmber, ColorRed} {
+		svg := string(Render("2026-01-01", 1, color))
+		if !strings.Contains(svg, "itworks.dev") {
+			t.Errorf("%s render missing label 'itworks.dev': %s", color, svg)
+		}
+	}
+}
+
+func TestRenderGlyphShapePerState(t *testing.T) {
+	green := string(Render("2026-01-01", 0, ColorGreen))
+	amber := string(Render("2026-01-01", 0, ColorAmber))
+	red := string(Render("2026-01-01", 1, ColorRed))
+
+	if !strings.Contains(green, `data-shape="disc"`) {
+		t.Errorf("green render missing disc glyph: %s", green)
+	}
+	if !strings.Contains(amber, `data-shape="diamond"`) {
+		t.Errorf("amber render missing diamond glyph: %s", amber)
+	}
+	if !strings.Contains(red, `data-shape="triangle"`) {
+		t.Errorf("red render missing triangle glyph: %s", red)
 	}
 }
 
@@ -101,6 +126,56 @@ func TestRenderNeverContainsOldHexValues(t *testing.T) {
 		}
 		if strings.Contains(svg, "#f85149") {
 			t.Errorf("%s render still contains old red hex #f85149: %s", color, svg)
+		}
+	}
+}
+
+func TestRenderColorHexesAreExclusiveToTheirState(t *testing.T) {
+	green := string(Render("2026-01-01", 0, ColorGreen))
+	amber := string(Render("2026-01-01", 0, ColorAmber))
+	red := string(Render("2026-01-01", 1, ColorRed))
+
+	cases := []struct {
+		name string
+		svg  string
+		hex  string
+	}{
+		{"green", green, hexGreen},
+		{"amber", amber, hexAmber},
+		{"red", red, hexRed},
+	}
+	others := map[string][]string{
+		"green": {amber, red},
+		"amber": {green, red},
+		"red":   {green, amber},
+	}
+	for _, c := range cases {
+		if !strings.Contains(c.svg, c.hex) {
+			t.Errorf("%s render missing its own hex %s", c.name, c.hex)
+		}
+		for _, o := range others[c.name] {
+			if strings.Contains(o, c.hex) {
+				t.Errorf("%s hex %s leaked into another state's render", c.name, c.hex)
+			}
+		}
+	}
+}
+
+func TestRenderVisibleTextNeverSaysCriticalOpen(t *testing.T) {
+	for _, color := range []string{ColorGreen, ColorAmber, ColorRed} {
+		svg := string(Render("2026-01-01", 1, color))
+		// "critical open" is only allowed inside the accessible <title>.
+		titleStart := strings.Index(svg, "<title")
+		titleEnd := strings.Index(svg, "</title>")
+		if titleStart < 0 || titleEnd < 0 {
+			t.Fatalf("%s render missing <title>: %s", color, svg)
+		}
+		withoutTitle := svg[:titleStart] + svg[titleEnd+len("</title>"):]
+		if strings.Contains(withoutTitle, "critical open") {
+			t.Errorf("%s render contains 'critical open' outside the title: %s", color, svg)
+		}
+		if !strings.Contains(svg[titleStart:titleEnd], "critical open") {
+			t.Errorf("%s render title missing 'critical open': %s", color, svg)
 		}
 	}
 }
