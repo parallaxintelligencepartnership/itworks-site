@@ -1,6 +1,6 @@
 # Profile
 
-format_version: 2
+format_version: 3
 profile: expert
 opted_out: []
 last_checkpoint: 2026-09-11 @9ab49cb
