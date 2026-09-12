@@ -1,0 +1,13 @@
+# local data and builds
+/data/
+/itworks
+/bin/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+# editor and OS noise
+.DS_Store
+.idea/
+.vscode/
