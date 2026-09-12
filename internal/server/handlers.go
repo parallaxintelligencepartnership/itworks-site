@@ -12,9 +12,14 @@ import (
 
 	"itworks.dev/internal/badge"
 	"itworks.dev/internal/store"
+	"itworks.dev/web"
 )
 
 const maxBodyBytes = 8192
+
+// landingPreviewCount is how many approved entries the landing page shows in
+// its wall preview.
+const landingPreviewCount = 3
 
 func (s *Server) handleLanding(w http.ResponseWriter, r *http.Request) {
 	approved, err := s.db.ListApproved()
@@ -25,11 +30,17 @@ func (s *Server) handleLanding(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 	green, amber, red := sampleBadges(now)
 
+	views := s.toEntryViews(approved, now)
+	if len(views) > landingPreviewCount {
+		views = views[:landingPreviewCount]
+	}
+
 	var data LandingData
 	data.Title = "itworks.dev"
 	data.EntryCount = len(approved)
 	data.Badges.Green, data.Badges.Amber, data.Badges.Red = green, amber, red
 	data.InstallCommands = InstallCommands
+	data.Entries = views
 
 	s.render(w, "landing.html", data)
 }
@@ -163,6 +174,38 @@ func (s *Server) handleStaticCSS(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cache-Control", "public, max-age=86400")
 	w.WriteHeader(http.StatusOK)
 	w.Write(s.staticCSS)
+}
+
+// handleStaticFont serves one embedded self hosted font file or its license
+// text. Only plain file names inside web/static/fonts are reachable.
+func (s *Server) handleStaticFont(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("file")
+	var ctype string
+	switch {
+	case strings.HasSuffix(name, ".woff2"):
+		ctype = "font/woff2"
+	case strings.HasSuffix(name, ".txt"):
+		ctype = "text/plain; charset=utf-8"
+	default:
+		http.NotFound(w, r)
+		return
+	}
+	if strings.ContainsAny(name, "/\\") || strings.Contains(name, "..") {
+		http.NotFound(w, r)
+		return
+	}
+
+	body, err := web.FS.ReadFile("static/fonts/" + name)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	h := w.Header()
+	h.Set("Content-Type", ctype)
+	h.Set("Cache-Control", "public, max-age=86400")
+	w.WriteHeader(http.StatusOK)
+	w.Write(body)
 }
 
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {

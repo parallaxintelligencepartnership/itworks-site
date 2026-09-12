@@ -3,29 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A public wall of apps that were built with the itworks plugin for Claude Code and finished through its closeout, each carrying a badge that tracks its audit status over time.">
+<meta name="description" content="A public ledger of apps reviewed by the itworks plugin for Claude Code. Every line carries an audit date and the count of critical findings still open.">
 <title>{{.}}</title>
 <link rel="stylesheet" href="/static/site.css">
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header">
-<div class="wrap site-header-inner">
-<a class="brand" href="/">itworks.dev</a>
-<nav class="site-nav" aria-label="Main">
-<a href="/wall">The wall</a>
-</nav>
+<a class="skip" href="#main">Skip to content</a>
+<div class="page">
+<div class="bar bleed">
+<a class="bar-id" href="/">itworks<i>.</i>dev</a>
+<nav class="bar-nav" aria-label="Main"><a href="/wall">the wall</a></nav>
+<span class="bar-key" aria-hidden="true"><i class="k-c"></i><i class="k-s"></i><i class="k-x"></i></span>
+<span class="prog" aria-hidden="true"></span>
 </div>
-</header>
 {{end}}
-{{define "footer"}}<footer class="site-footer">
-<div class="wrap site-footer-inner">
-<p>itworks.dev stores closeout summaries and serves badges. It never runs a model.</p>
-<nav class="site-nav" aria-label="Footer">
-<a href="/">Home</a>
-<a href="/wall">The wall</a>
-</nav>
-</div>
+
+{{define "footer"}}<footer class="foot bleed">
+<p><b>Parallax Intelligence</b></p>
+<p>Every entry is a closeout summary. This site never runs a model.</p>
+<p class="repo"><a href="https://github.com/parallaxintelligencepartnership/itworks">github.com/parallaxintelligencepartnership/itworks</a></p>
 </footer>
+</div>
 </body>
 </html>{{end}}
+
+{{define "colhead"}}<ol class="colhead" aria-hidden="true">
+<li></li><li>app</li><li>what it does</li><li>audit</li>
+<li>found</li><li>fixed</li><li>accepted</li><li>critical</li><li>badge</li>
+</ol>{{end}}
+
+{{define "ledgerrow"}}<article class="row {{if eq .BadgeColor "red"}}is-critical{{else if eq .BadgeColor "amber"}}is-stale{{else}}is-current{{end}}">
+<div class="marker" aria-hidden="true"></div>
+<div class="id">
+<h3 class="name"><a href="/e/{{.ID}}">{{.Name}}</a></h3>
+<p class="src"><b>{{.Source}}</b> {{if .RepoURL}}<a href="{{.RepoURL}}">repo</a>{{else}}source not published{{end}}</p>
+</div>
+<p class="what">{{.Summary}}</p>
+<p class="when"><b>{{.AuditTier}}</b> <span class="num">{{.AuditDate}}</span></p>
+<div class="counts">
+<p class="n"><span class="k">found</span><span class="v num">{{.Found}}</span></p>
+<p class="n"><span class="k">fixed</span><span class="v num">{{.Fixed}}</span></p>
+<p class="n"><span class="k">accepted</span><span class="v num">{{.Accepted}}</span></p>
+<p class="n {{if .CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalOpen}}</span></p>
+</div>
+<div class="badgecell">
+<img class="badge" src="{{.BadgeURL}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open">
+<span class="state">{{if eq .BadgeColor "red"}}critical open{{else if eq .BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
+</div>
+</article>{{end}}

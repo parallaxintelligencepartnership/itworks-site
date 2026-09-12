@@ -35,6 +35,8 @@ type LandingData struct {
 		Green, Amber, Red template.HTML
 	}
 	InstallCommands []string
+	// Entries is the newest few approved entries, for the wall preview.
+	Entries []EntryView
 }
 
 type WallData struct {

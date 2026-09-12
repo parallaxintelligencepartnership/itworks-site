@@ -1,60 +1,119 @@
 {{template "head" .Title}}
 <main id="main">
 
-<section class="hero wrap">
-<h1>A wall for apps that finished the job.</h1>
-<p class="lede">itworks.dev is a public wall of apps that were built with the itworks plugin for Claude Code and carried all the way through its closeout. Every entry keeps a badge that watches the app after launch, not just on the day it shipped.</p>
+<header class="mast bleed snap">
+<h1 class="wordmark">itworks<span class="dot">.</span>dev</h1>
+<p class="tag">Anyone can say it works. This wall prints the receipt.</p>
+<div class="mast-badge b">{{.Badges.Green}}</div>
+</header>
+
+<section class="flow-sec bleed">
+<ol class="flow">
+<li><b>Build</b> with the itworks plugin.</li>
+<li><b>Run</b> the closeout review.</li>
+<li><b>Publish</b> the summary here.</li>
+<li><b>Paste</b> the badge in your README.</li>
+</ol>
 </section>
 
-<section class="section badges wrap" aria-labelledby="badges-heading">
-<h2 id="badges-heading">Three badge states</h2>
-<ul class="badge-list">
-<li class="badge-item badge-item-green">
-<span class="badge-sample">{{.Badges.Green}}</span>
-<span class="badge-text">Audited within the last 30 days with zero critical findings open.</span>
-</li>
-<li class="badge-item badge-item-amber">
-<span class="badge-sample">{{.Badges.Amber}}</span>
-<span class="badge-text">The audit has gone stale.</span>
-</li>
-<li class="badge-item badge-item-red">
-<span class="badge-sample">{{.Badges.Red}}</span>
-<span class="badge-text">A critical finding is open.</span>
-</li>
+<section class="strip bleed" aria-labelledby="strip-h">
+<div class="strip-head">
+<h2 class="h-xl" id="strip-h">The badge ages in public.</h2>
+<p class="lede">On day 30 the plate turns amber and says stale.</p>
+</div>
+
+<div class="ruler">
+<div class="track" aria-hidden="true">
+<div class="runner">
+<span class="plate green b">{{.Badges.Green}}</span>
+<span class="plate amber b">{{.Badges.Amber}}</span>
+</div>
+</div>
+
+<div class="trail" aria-hidden="true"></div>
+<div class="ticks" aria-hidden="true"></div>
+
+<ol class="axis num" aria-hidden="true">
+<li>0</li><li>10</li><li>20</li><li class="mark">30</li><li>40</li><li>50</li><li>60</li>
+</ol>
+
+<p class="odo" aria-hidden="true">
+<span class="odo-win"><span class="odo-reel num"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></span></span>
+<b class="unit">days</b>
+</p>
+<p class="rm-only">Day 0 and day 30.</p>
+</div>
+</section>
+
+<section class="spec bleed" aria-labelledby="spec-h">
+<h2 class="h-lg" id="spec-h">Three plates.</h2>
+
+<div class="plates">
+<figure class="fig fig-current">
+<span class="lg b">{{.Badges.Green}}</span>
+<figcaption>current</figcaption>
+</figure>
+
+<figure class="fig fig-stale">
+<span class="lg b">{{.Badges.Amber}}</span>
+<figcaption>stale</figcaption>
+</figure>
+
+<figure class="fig fig-crit">
+<span class="lg b">{{.Badges.Red}}</span>
+<figcaption>critical open</figcaption>
+</figure>
+</div>
+
+<button class="howbtn" popovertarget="how">The rule</button>
+
+<div id="how" popover>
+<ol>
+<li>Red if any critical is open.</li>
+<li>Amber at 30 days or older.</li>
+<li>Otherwise green.</li>
+</ol>
+<button class="close" popovertarget="how" popovertargetaction="hide">Close</button>
+</div>
+</section>
+
+<section class="wall bleed snap" aria-labelledby="wall-h">
+<div class="wall-head">
+<div>
+<h2 class="h-lg" id="wall-h">The wall</h2>
+<p class="lede">Same columns for everyone.</p>
+</div>
+<p class="wall-more"><a href="/wall">every entry</a></p>
+</div>
+
+{{if .Entries}}
+<div class="ledger">
+{{template "colhead" .}}
+{{range .Entries}}{{template "ledgerrow" .}}
+{{end}}
+</div>
+{{else}}
+<p class="empty">Nothing on the wall yet.</p>
+{{end}}
+</section>
+
+<section class="install bleed snap" aria-labelledby="install-h">
+<h2 class="h-lg" id="install-h">Two lines.</h2>
+<div class="cmds">
+{{range .InstallCommands}}<div class="cmd"><code>{{.}}</code></div>
+{{end}}</div>
+</section>
+
+<section class="payload bleed" aria-labelledby="payload-h">
+<h2 class="h-lg" id="payload-h">What gets published.</h2>
+<ul class="fields">
+<li>name</li><li>summary</li><li>source</li><li>audit</li>
+<li>found</li><li>fixed</li><li>accepted</li><li>criticals</li>
 </ul>
-<p class="callout">The badge can look bad on purpose.</p>
-<p>That is the honest part. The badge reports what is true right now, even when the true answer is amber or red.</p>
-</section>
-
-<section class="section install wrap" aria-labelledby="install-heading">
-<h2 id="install-heading">Install the plugin</h2>
-<pre class="code"><code>{{range .InstallCommands}}{{.}}
-{{end}}</code></pre>
-<p>The closeout process asks before it publishes anything to this site.</p>
-</section>
-
-<section class="section publish wrap" aria-labelledby="publish-heading">
-<h2 id="publish-heading">What gets published</h2>
-<ul class="publish-list">
-<li>The display name of the app.</li>
-<li>One line on what it does.</li>
-<li>A source label, public or closed, with a repo link only when the source is public.</li>
-<li>The audit tier and the audit date.</li>
-<li>How many findings were found, fixed, and accepted.</li>
-<li>How many critical findings are still open.</li>
-</ul>
-<p class="callout">Nothing else. No code, no file paths, no secrets, no environment.</p>
-</section>
-
-<section class="section model-note wrap" aria-labelledby="model-heading">
-<h2 id="model-heading">No model runs here</h2>
-<p>This site never runs a model. It only stores and displays closeout summaries. The work happens in visitors' own Claude Code sessions, on their own machines.</p>
-</section>
-
-<section class="section cta wrap" aria-labelledby="cta-heading">
-<h2 id="cta-heading">See what has shipped</h2>
-<p>{{.EntryCount}} entries have published a closeout so far.</p>
-<a class="button" href="/wall">Visit the wall</a>
+<div class="stop">
+<p class="big">Nothing else leaves your machine.</p>
+<p class="fine">The site never runs a model.</p>
+</div>
 </section>
 
 </main>

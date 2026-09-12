@@ -130,7 +130,7 @@ func Render(date string, criticalOpen int, color string) []byte {
 	glyphCX := float64(leftW) + glyphCenterOffset
 	textX := float64(leftW) + textStartOffset
 
-	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-labelledby="itworks-badge-title">`+
+	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %[1]d %[2]d" role="img" aria-labelledby="itworks-badge-title">`+
 		`<title id="itworks-badge-title">%s</title>`+
 		`<g shape-rendering="crispEdges">`+
 		`<rect width="%d" height="%d" fill="%s"/>`+

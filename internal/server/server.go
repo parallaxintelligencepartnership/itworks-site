@@ -19,7 +19,7 @@ const (
 	defaultPendingCap = 500
 	rateLimitPerHour  = 5
 	adminUserHeader   = "X-Authentik-Username"
-	cspDefault        = "default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+	cspDefault        = "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
 	cspBadge          = "default-src 'none'"
 )
 
@@ -82,6 +82,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("POST /api/entries", s.handleAPICreate)
 	mux.HandleFunc("GET /badge/{idsvg}", s.handleBadge)
 	mux.HandleFunc("GET /static/site.css", s.handleStaticCSS)
+	mux.HandleFunc("GET /static/fonts/{file}", s.handleStaticFont)
 	mux.HandleFunc("GET /healthz", s.handleHealthz)
 
 	mux.HandleFunc("GET /admin", s.requireAdmin(s.handleAdminList))

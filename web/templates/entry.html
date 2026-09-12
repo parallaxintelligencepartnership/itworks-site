@@ -1,28 +1,37 @@
 {{template "head" .Title}}
 <main id="main">
-<section class="section wrap" aria-labelledby="entry-heading">
 
-<article class="card card-solo">
-<h1 id="entry-heading" class="card-title">{{.Entry.Name}}</h1>
-<p class="card-summary">{{.Entry.Summary}}</p>
-<p class="card-meta">
-<span class="source-label">{{.Entry.Source}}</span>{{if .Entry.RepoURL}} <a href="{{.Entry.RepoURL}}">Repo</a>{{end}}
-</p>
-<p class="card-meta">Tier: {{.Entry.AuditTier}}. Date: {{.Entry.AuditDate}}.</p>
-<ul class="counts">
-<li><span class="count-label">Found</span><span class="count-value">{{.Entry.Found}}</span></li>
-<li><span class="count-label">Fixed</span><span class="count-value">{{.Entry.Fixed}}</span></li>
-<li><span class="count-label">Accepted</span><span class="count-value">{{.Entry.Accepted}}</span></li>
-<li><span class="count-label">Critical open</span><span class="count-value">{{.Entry.CriticalOpen}}</span></li>
-</ul>
-<p class="card-badge"><img class="badge-img" src="{{.Entry.BadgeURL}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open"></p>
-</article>
-
-<div class="readme-snippet">
-<h2>Add this badge to a README</h2>
-<pre class="code"><code>[![audit badge]({{.Entry.BadgeURL}})]({{.Entry.EntryURL}})</code></pre>
+<article class="sheet bleed snap">
+<div class="sheet-head">
+<div>
+<h1 class="h-xl">{{.Entry.Name}}</h1>
+<p class="lede">{{.Entry.Summary}}</p>
+</div>
+<div class="sheet-badge b">
+<img class="badge" src="{{.Entry.BadgeURL}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open">
+<span class="state">{{if eq .Entry.BadgeColor "red"}}critical open{{else if eq .Entry.BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
+</div>
 </div>
 
+<ul class="meta">
+<li><span class="lab">source</span><b>{{.Entry.Source}}</b>{{if .Entry.RepoURL}} <a href="{{.Entry.RepoURL}}">repo</a>{{end}}</li>
+<li><span class="lab">tier</span><b>{{.Entry.AuditTier}}</b></li>
+<li><span class="lab">audit</span><b class="num">{{.Entry.AuditDate}}</b></li>
+</ul>
+
+<ul class="tally">
+<li><span class="lab">found</span><span class="v num">{{.Entry.Found}}</span></li>
+<li><span class="lab">fixed</span><span class="v num">{{.Entry.Fixed}}</span></li>
+<li><span class="lab">accepted</span><span class="v num">{{.Entry.Accepted}}</span></li>
+<li class="{{if .Entry.CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="lab">critical open</span><span class="v num">{{.Entry.CriticalOpen}}</span></li>
+</ul>
+</article>
+
+<section class="snippet bleed" aria-labelledby="snip-h">
+<h2 class="h-lg" id="snip-h">Put it in the README.</h2>
+<pre class="code"><code>![audit badge]({{.Entry.BadgeURL}})</code></pre>
+<p class="back"><a href="/wall">Back to the wall</a></p>
 </section>
+
 </main>
 {{template "footer" .}}
