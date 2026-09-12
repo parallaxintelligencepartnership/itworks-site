@@ -55,3 +55,16 @@ git checkout <previous-tag>
 ```
 
 This re-syncs the older code to pi3 and rebuilds and restarts the container. The database in `itworks-data` is untouched by a rollback since it lives in a separate named volume, not in the repo checkout.
+
+## Post deploy checks from checkpoint 1
+
+Two findings can only be verified against the live Traefik route. Run both right after the first deploy and record the result in .vibecheck/REVIEWS.md.
+
+1. Admin allowlist matches Authentik. Sign in as Matt and open https://itworks.dev/admin (expect 200). The value in ITWORKS_ADMIN_USERS must equal the X-authentik-username Traefik forwards; if the page is 403 for Matt, check the container log for `admin denied user=` and set the variable to that name in docker-compose.yml, then redeploy.
+2. Rate limiting keys on the real client. Traefik must overwrite X-Real-Ip. Proof:
+
+```
+for i in $(seq 1 6); do curl -s -o /dev/null -w "%{http_code}\n" -H "X-Real-Ip: 10.0.0.$i" -H "Content-Type: application/json" -d @fixtures/seed-msp-sentinel.json https://itworks.dev/api/entries; done
+```
+
+The sixth line must be 429. If every line is 201, the header is trusted from the client and ITWORKS_TRUST_PROXY must key on the last X-Forwarded-For hop instead. The six test entries stay pending; hide them from /admin afterwards.
