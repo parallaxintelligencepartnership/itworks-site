@@ -45,7 +45,7 @@ Everything else 404. Method mismatch 405.
 
 Admin guard (all /admin routes): request must carry header `X-Authentik-Username` with a non empty value, else 403. Admin POSTs must also carry an `Origin` header whose host equals the request Host, else 403. Traefik forward-auth is the primary guard; this is defense in depth.
 
-Security headers on every response: `Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`. The badge route may relax CSP to `default-src 'none'` only.
+Security headers on every response: `Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'` (fonts are self hosted woff2 files embedded under web/static/fonts, OFL licensed, license file alongside), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`. The badge route may relax CSP to `default-src 'none'` only.
 
 ## POST /api/entries validation
 Content-Type must start with `application/json` else 415. Body read through `http.MaxBytesReader` at 8192 bytes; over cap → 413. Decoder uses `DisallowUnknownFields`; any unknown field, syntax error, or missing required field → 400 with JSON `{"error":"<plain English>"}`. Required fields:
@@ -63,7 +63,7 @@ Abuse limits: per IP limiter, 5 POSTs per rolling hour (in memory, token bucket 
 ## Badge rules (internal/badge)
 `Color`: if criticalOpen > 0 → "red"; else if the UTC date of now minus audit_date ≥ 30 days → "amber"; else "green". Boundary: 29 days → green, 30 days → amber. Red wins over amber.
 Colors (all pass WCAG AA at 11 px): green plate `#1a7f37` with white text, amber plate `#d29922` with ink text `#1f1f1f`, red plate `#b3261e` with white text, label background `#24292f` with white text. The old `#3fb950` / `#f85149` plates failed AA with white text and must not return.
-`Render` returns a flat shields style SVG, height 20, left label text `itworks.dev audit`, right text `<YYYY-MM-DD> · <N> critical open` for green and red, and `<YYYY-MM-DD> · stale · <N> critical open` for amber, so the amber state survives grayscale and screen readers (the middle dot is U+00B7, not a dash). Width from text length at 6.5 px per char plus 10 px padding per side, font family `Verdana,Geneva,DejaVu Sans,sans-serif` size 11, `<title>` reads `Audit <date>, <N> critical open, <color>`. Right segment fill is the color. No external references in the SVG.
+`Render` returns the Ledger badge (design source: docs/design/ledger-mock-v2.html, the three `<symbol>` sprites): height 20, content sized width; left plate `#1f1f1f` with the label `itworks.dev` in white; a 1 px joint hairline; then the state plate carrying a state glyph (green: filled disc; amber: diamond; red: triangle) 10 px in, and the text 12 px after the glyph, 12 px trailing. Right text is `<YYYY-MM-DD> · <N> critical` for green and red and `<YYYY-MM-DD> · <N> critical · stale` for amber (the middle dot is U+00B7, not a dash), so the amber state survives grayscale and screen readers. Font: `-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif` 600 weight, size 11, with `textLength` pinned to the computed width so layout is stable across platforms. `<title>` reads `Audit <date>, <N> critical open, <color>` (amber: `Audit <date>, stale, <N> critical open, amber`). No external references in the SVG.
 
 ## Template contract (html/template)
 Files parsed together with `template.ParseFS(web.FS, "templates/*.html")`; pages executed by file name ("landing.html" etc.). base.html defines `{{define "head"}}` (doctype through `<body>` open, takes `.Title` string) and `{{define "footer"}}` (site footer through `</html>`). Data passed to each page:
@@ -74,7 +74,7 @@ type EntryView struct {
     BadgeColor string   // green|amber|red
     BadgeURL, EntryURL string
 }
-type LandingData struct { Title string; EntryCount int; Badges struct{ Green, Amber, Red template.HTML }; InstallCommands []string }
+type LandingData struct { Title string; EntryCount int; Badges struct{ Green, Amber, Red template.HTML }; InstallCommands []string; Entries []EntryView /* newest 3 approved, for the wall preview */ }
 type WallData    struct { Title string; Entries []EntryView }
 type EntryData   struct { Title string; Entry EntryView }
 type AdminData   struct { Title string; Pending, Approved, Hidden []EntryView }
