@@ -1,6 +1,6 @@
 # itworks.dev service contract
 
-Single Go binary (Go 1.26, stdlib + modernc.org/sqlite v1.58.0 pinned exact). One SQLite file. Static assets embedded. NO model calls, NO accounts, NO email, NO credentials in any file. UI copy: plain English, US spelling, never the phrase "vibe check", and no dashes of any kind ("-", "–", "—") inside any text a visitor can read (attributes, CSS, and code are exempt).
+Single Go binary (Go 1.26, stdlib + modernc.org/sqlite v1.58.0 pinned exact). One SQLite file. Static assets embedded. NO model calls, NO accounts, NO email, NO credentials in any file. UI copy: plain English, US spelling, never the phrase "vibe check", and no dashes of any kind ("-", "–", "—") inside any text a visitor can read (attributes, CSS, code, and ISO dates such as 2026-09-07 are exempt; dates are data, not copy).
 
 ## Layout
 ```

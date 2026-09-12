@@ -8,3 +8,4 @@
 - 2026-09-11 | entry ids are 12 char random lowercase base32 from crypto/rand | why: pending entries are unlisted, so ids must not be guessable | instead of: sequential integers
 - 2026-09-11 | admin handlers require the X-Authentik-Username header and a same origin Origin header on POST, in addition to Traefik forward-auth | why: defense in depth if the Traefik label is ever dropped | instead of: trusting the proxy alone
 - 2026-09-11 | published tier and date: "audit" plus last_audit date when PROFILE.md has one, else "closeout" plus the closeout date; counts are whole-project from REVIEWS.md | why: the staleness signal should track the last time the logic was actually read | instead of: always sending the closeout sweep date
+- 2026-09-11 | ISO dates (YYYY-MM-DD) are exempt from the no dash rule in visitor readable text | why: the audit date is data the badge and wall must show verbatim; the rule targets prose | instead of: a second display date field on EntryView
