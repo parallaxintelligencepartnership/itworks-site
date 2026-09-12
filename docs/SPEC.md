@@ -62,8 +62,8 @@ Abuse limits: per IP limiter, 5 POSTs per rolling hour (in memory, token bucket 
 
 ## Badge rules (internal/badge)
 `Color`: if criticalOpen > 0 → "red"; else if the UTC date of now minus audit_date ≥ 30 days → "amber"; else "green". Boundary: 29 days → green, 30 days → amber. Red wins over amber.
-Colors: green `#3fb950`, amber `#d29922`, red `#f85149`, label background `#24292f`, text `#ffffff`.
-`Render` returns a flat shields style SVG, height 20, left label text `itworks.dev audit`, right text `<YYYY-MM-DD> · <N> critical open` (the middle dot is U+00B7, not a dash). Width from text length at 6.5 px per char plus 10 px padding per side, font family `Verdana,Geneva,DejaVu Sans,sans-serif` size 11, `<title>` reads `Audit <date>, <N> critical open, <color>`. Right segment fill is the color. No external references in the SVG.
+Colors (all pass WCAG AA at 11 px): green plate `#1a7f37` with white text, amber plate `#d29922` with ink text `#1f1f1f`, red plate `#b3261e` with white text, label background `#24292f` with white text. The old `#3fb950` / `#f85149` plates failed AA with white text and must not return.
+`Render` returns a flat shields style SVG, height 20, left label text `itworks.dev audit`, right text `<YYYY-MM-DD> · <N> critical open` for green and red, and `<YYYY-MM-DD> · stale · <N> critical open` for amber, so the amber state survives grayscale and screen readers (the middle dot is U+00B7, not a dash). Width from text length at 6.5 px per char plus 10 px padding per side, font family `Verdana,Geneva,DejaVu Sans,sans-serif` size 11, `<title>` reads `Audit <date>, <N> critical open, <color>`. Right segment fill is the color. No external references in the SVG.
 
 ## Template contract (html/template)
 Files parsed together with `template.ParseFS(web.FS, "templates/*.html")`; pages executed by file name ("landing.html" etc.). base.html defines `{{define "head"}}` (doctype through `<body>` open, takes `.Title` string) and `{{define "footer"}}` (site footer through `</html>`). Data passed to each page:
