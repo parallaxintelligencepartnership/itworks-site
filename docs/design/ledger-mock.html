@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>itworks.dev, the public wall of reviewed apps</title>
+<meta name="description" content="A public ledger of apps built with the vibecheck plugin for Claude Code and finished through its closeout review. Every entry carries an audit date and an open critical count.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   itworks.dev / THE LEDGER
+   One stylesheet. Zero JavaScript. Every motion is transform or opacity.
+   ========================================================================= */
+
+:root{
+  color-scheme: dark;
+
+  /* --- field: a saturated teal ink, not paper, not neutral dark ------- */
+  --field:        oklch(0.205 0.049 205);   /* #08252c approx */
+  --field-band:   oklch(0.243 0.050 205);   /* #0e2e36 approx */
+  --field-deep:   oklch(0.165 0.042 205);   /* #041d23 approx */
+
+  /* --- rules: the structure is the ornament --------------------------- */
+  --rule:         oklch(0.395 0.052 205);   /* #2c5661 approx */
+  --rule-strong:  oklch(0.600 0.080 199);   /* #4d8b9b approx */
+
+  /* --- ink ------------------------------------------------------------ */
+  --chalk:        oklch(0.960 0.014 200);   /* #eaf6f8 approx */
+  --chalk-dim:    oklch(0.775 0.028 205);   /* #adc7cd approx */
+
+  /* --- saturated where it counts -------------------------------------- */
+  --acid:         oklch(0.900 0.198 122);   /* #b4f000 approx */
+  --flare:        oklch(0.690 0.208 31);    /* #ff5a3c approx */
+  --sun:          oklch(0.830 0.163 86);    /* #f3b13a approx */
+
+  /* --- badge plates, fixed by contract, never themed ------------------- */
+  --plate-green:  #1a7f37;
+  --plate-amber:  #d29922;
+  --plate-red:    #b3261e;
+  --plate-label:  #1f1f1f;
+  --plate-ink:    #1f1f1f;
+  --plate-paper:  #ffffff;
+
+  --gut: clamp(16px, 2.2vw, 40px);
+  --hair: 1px;
+
+  --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+*,*::before,*::after{ box-sizing: border-box; border-radius: 0; }
+
+html{ -webkit-text-size-adjust: 100%; }
+
+body{
+  margin:0;
+  overflow-x: clip;
+  background: var(--field);
+  color: var(--chalk);
+  font-family: var(--sans);
+  font-variation-settings: "wdth" 100, "wght" 420;
+  font-size: clamp(15px, 0.55vw + 13.4px, 18px);
+  line-height: 1.45;
+  font-synthesis-weight: none;
+  /* the ledger grain: vertical column rules, drawn not imaged */
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(12.5% - 1px),
+    oklch(0.395 0.052 205 / .22) calc(12.5% - 1px) 12.5%
+  );
+}
+
+h1,h2,h3{ margin:0; font-variation-settings: "wdth" 112, "wght" 780; letter-spacing: -0.015em; line-height: 1.02; }
+p{ margin:0; }
+a{ color: var(--acid); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
+  outline: 3px solid var(--acid); outline-offset: 2px;
+}
+
+.num{ font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1; }
+.mono{ font-family: var(--mono); font-size: 0.86em; }
+
+.bleed{ padding-inline: var(--gut); }
+.rule-top{ border-top: var(--hair) solid var(--rule); }
+.rule-heavy{ border-top: 4px solid var(--rule-strong); }
+
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ============================== MASTHEAD ================================ */
+
+.topbar{
+  position: sticky; top: 0; z-index: 40;
+  display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline;
+  padding-block: 8px;
+  background: var(--field-deep);
+  border-bottom: var(--hair) solid var(--rule-strong);
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+  color: var(--chalk-dim);
+}
+.topbar b{ color: var(--acid); font-weight: 700; }
+
+.mast{
+  padding-block: clamp(28px, 7vw, 88px) clamp(20px, 3vw, 40px);
+  background: var(--field-deep);
+}
+.wordmark{
+  font-size: clamp(3.1rem, 15.5vw, 13rem);
+  font-variation-settings: "wdth" 118, "wght" 860;
+  letter-spacing: -0.04em;
+  line-height: 0.82;
+  color: var(--chalk);
+  overflow-wrap: break-word;
+}
+.wordmark .dot{ color: var(--acid); }
+.mast-sub{
+  margin-top: clamp(14px, 2.2vw, 26px);
+  display: grid; gap: 10px;
+  grid-template-columns: minmax(0,1fr);
+  border-top: var(--hair) solid var(--rule);
+  padding-top: 12px;
+  color: var(--chalk-dim);
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.01em;
+}
+@media (min-width: 820px){
+  .mast-sub{ grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--gut); }
+}
+.mast-sub b{ display:block; color: var(--chalk); font-weight: 700; }
+
+/* ============================== STATEMENT =============================== */
+
+.statement{
+  padding-block: clamp(34px, 7vw, 92px);
+  background: var(--field);
+  border-top: 4px solid var(--acid);
+}
+.statement h1{
+  font-size: clamp(1.95rem, 6.4vw, 5.1rem);
+  font-variation-settings: "wdth" 96, "wght" 760;
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.statement h1 em{ font-style: normal; color: var(--acid); }
+.statement .legs{
+  margin-top: clamp(20px, 3vw, 38px);
+  display: grid; gap: 0;
+  border-top: var(--hair) solid var(--rule);
+}
+.leg{
+  border-bottom: var(--hair) solid var(--rule);
+  padding-block: 14px;
+  display: grid; gap: 4px 18px;
+  grid-template-columns: 2.6rem minmax(0,1fr);
+  align-items: start;
+}
+.leg .ix{ font-family: var(--mono); font-size: 12px; color: var(--acid); padding-top: 4px; }
+.leg p{ color: var(--chalk-dim); max-width: 62ch; }
+.leg strong{ color: var(--chalk); font-weight: 700; }
+
+/* ============================ THE DECAY STRIP =========================== */
+
+.strip{
+  padding-block: clamp(40px, 8vw, 104px);
+  background: var(--field-deep);
+  border-top: var(--hair) solid var(--rule-strong);
+}
+.strip h2{ font-size: clamp(1.7rem, 5.4vw, 4rem); max-width: 18ch; text-wrap: balance; }
+.strip .lede{ margin-top: 16px; max-width: 58ch; color: var(--chalk-dim); }
+
+.ruler{
+  --bw: 326px;              /* plate width: the lane is the track minus this */
+  margin-top: clamp(26px, 5vw, 60px);
+  border-top: var(--hair) solid var(--rule);
+  border-bottom: 4px solid var(--rule-strong);
+  padding-block: 20px 0;
+}
+.track{
+  container-type: inline-size;
+  position: relative;
+  overflow: clip;
+  padding-block: 6px 18px;
+}
+.runner{ position: relative; width: max-content; will-change: transform; }
+.runner::before{
+  content:""; position:absolute; inset-block: -7px; inset-inline-start: 0;
+  inline-size: 3px; background: var(--acid);
+}
+.runner .plate{ display:block; }
+.runner .plate.amber{ position:absolute; inset-block-start:0; inset-inline-start:0; opacity:0; }
+
+.ticks{
+  position: relative;
+  height: 22px;
+  inline-size: calc(100% - var(--bw));
+  min-inline-size: 120px;
+  background-image:
+    repeating-linear-gradient(90deg,
+      var(--rule) 0 1px, transparent 1px calc(100% / 12));
+  border-top: var(--hair) solid var(--rule);
+}
+.ticks::after{
+  content:"";
+  position:absolute; inset-block: -4px auto; block-size: 30px;
+  inset-inline-start: 50%; inline-size: 3px;
+  background: var(--sun);
+}
+.axis{
+  inline-size: calc(100% - var(--bw));
+  min-inline-size: 120px;
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  font-family: var(--mono); font-size: 11px; color: var(--chalk-dim);
+  padding-block: 6px 18px;
+}
+.axis span{ text-align: center; }
+.axis span:first-child{ text-align: left; }
+.axis span:last-child{ text-align: right; }
+.axis .mark{ color: var(--sun); font-weight: 700; }
+
+.odo{
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+  font-family: var(--mono); font-size: 12.5px; color: var(--chalk-dim);
+  padding-block: 14px 0;
+}
+.odo-win{
+  display:inline-block; overflow: clip; block-size: 2.6rem; line-height: 2.6rem;
+  border-inline-start: 3px solid var(--acid); padding-inline-start: 10px;
+}
+.odo-reel{ display:block; will-change: transform; }
+.odo-reel b{
+  display:block; block-size: 2.6rem; line-height: 2.6rem;
+  font-family: var(--sans); font-variation-settings:"wdth" 112,"wght" 800;
+  font-size: 2.1rem; color: var(--acid); font-variant-numeric: tabular-nums;
+}
+.rm-only{ display:none; }
+
+.branch{
+  margin-top: clamp(24px, 4vw, 44px);
+  display: grid; gap: 14px;
+  border-top: var(--hair) solid var(--rule);
+  padding-top: 18px;
+}
+.branch p{ color: var(--chalk-dim); max-width: 58ch; }
+
+/* ============================== BADGE STATES ============================ */
+
+.states{
+  padding-block: clamp(40px, 7vw, 96px);
+  background: var(--field);
+  border-top: var(--hair) solid var(--rule-strong);
+}
+.states h2{ font-size: clamp(1.6rem, 4.6vw, 3.2rem); max-width: 20ch; }
+.states .lede{ margin-top: 14px; max-width: 58ch; color: var(--chalk-dim); }
+
+.plates{ margin-top: clamp(22px, 4vw, 46px); border-top: var(--hair) solid var(--rule); }
+.plate-row{
+  display: grid; gap: 12px 24px;
+  grid-template-columns: minmax(0,1fr);
+  padding-block: 20px;
+  border-bottom: var(--hair) solid var(--rule);
+  align-items: start;
+}
+@media (min-width: 900px){
+  .plate-row{ grid-template-columns: 348px minmax(0,1fr); }
+}
+.plate-row .why{ color: var(--chalk-dim); max-width: 56ch; }
+.plate-row .why b{ color: var(--chalk); }
+svg.badge{ display:block; height: 20px; width: auto; max-width: 100%; }
+@media (max-width: 560px){ svg.badge{ height: 15px; } .ruler{ --bw: 245px; } }
+
+.howbtn{
+  margin-top: 22px;
+  font: inherit; font-family: var(--mono); font-size: 12.5px;
+  background: var(--acid); color: #0a1a00; border: 0;
+  padding: 10px 16px; cursor: pointer;
+  anchor-name: --howbtn;
+}
+.howbtn:hover{ background: var(--chalk); }
+
+#how{
+  margin: 0; inset: auto;
+  position: absolute;
+  position-anchor: --howbtn;
+  position-area: block-end span-inline-end;
+  position-try-fallbacks: flip-block, flip-inline, block-start span-inline-start;
+  margin-block-start: 10px;
+  inline-size: min(420px, calc(100vw - 32px));
+  background: var(--field-deep);
+  border: 2px solid var(--acid);
+  color: var(--chalk);
+  padding: 18px;
+  opacity: 0; transform: translateY(-8px);
+  transition: opacity .18s ease, transform .18s ease,
+              overlay .18s allow-discrete, display .18s allow-discrete;
+}
+#how:popover-open{ opacity: 1; transform: none; }
+@starting-style{ #how:popover-open{ opacity: 0; transform: translateY(-8px); } }
+#how::backdrop{ background: oklch(0.165 0.042 205 / .72); }
+#how h3{ font-size: 1.1rem; font-variation-settings:"wdth" 106,"wght" 760; }
+#how ul{ margin: 12px 0 0; padding-left: 1.1em; color: var(--chalk-dim); }
+#how li{ margin-bottom: 8px; }
+#how .close{
+  margin-top: 14px; font: inherit; font-family: var(--mono); font-size: 12px;
+  background: transparent; color: var(--acid); border: var(--hair) solid var(--rule-strong);
+  padding: 8px 14px; cursor: pointer;
+}
+@supports not (anchor-name: --a){
+  #how{ position: fixed; inset: auto 16px 16px 16px; inline-size: auto; }
+}
+
+/* ================================ WALL ================================== */
+
+.wall{
+  padding-block: clamp(40px, 7vw, 96px) 0;
+  background: var(--field-deep);
+  border-top: 4px solid var(--rule-strong);
+  container-type: inline-size;
+}
+.wall h2{ font-size: clamp(1.6rem, 4.6vw, 3.2rem); }
+.wall .lede{ margin-top: 14px; max-width: 56ch; color: var(--chalk-dim); }
+
+.filter{
+  margin: clamp(22px, 3.4vw, 40px) 0 0; padding: 0; border: 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0;
+  border-top: var(--hair) solid var(--rule);
+  border-bottom: var(--hair) solid var(--rule);
+}
+.filter legend{
+  padding: 0 12px 0 0; font-family: var(--mono); font-size: 11.5px; color: var(--chalk-dim);
+}
+.filter input{ position:absolute; opacity:0; inline-size:1px; block-size:1px; }
+.filter label{
+  font-family: var(--mono); font-size: 12px; padding: 11px 14px; cursor: pointer;
+  color: var(--chalk-dim); border-left: var(--hair) solid var(--rule);
+  transition: opacity .15s ease;
+}
+.filter label:last-of-type{ border-right: var(--hair) solid var(--rule); }
+.filter input:checked + label{ background: var(--acid); color: #0a1a00; font-weight: 700; }
+.filter input:focus-visible + label{ outline: 3px solid var(--acid); outline-offset: -3px; }
+
+.colhead{
+  display: grid; gap: 0 14px;
+  grid-template-columns: 14px minmax(0,1.5fr) minmax(0,2.1fr) 8.5rem 8.5rem repeat(4, 4.2rem);
+  position: sticky; top: 33px; z-index: 20;
+  background: var(--field-deep);
+  border-bottom: var(--hair) solid var(--rule-strong);
+  padding-block: 9px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--chalk-dim);
+}
+.colhead span:nth-child(n+6){ text-align: right; }
+
+.row{
+  display: grid; gap: 4px 14px;
+  grid-template-columns: 14px minmax(0,1.5fr) minmax(0,2.1fr) 8.5rem 8.5rem repeat(4, 4.2rem);
+  align-items: start;
+  padding-block: 18px;
+  border-bottom: var(--hair) solid var(--rule);
+  transition: opacity .16s ease;
+}
+.row:nth-of-type(even){ background: var(--field); }
+
+.marker{ grid-row: 1 / -1; block-size: 100%; min-block-size: 2.6rem; will-change: transform; transform-origin: left center; transition: transform .16s ease; }
+.is-current .marker{ background: var(--plate-green); }
+.is-stale   .marker{ background: repeating-linear-gradient(45deg, var(--plate-amber) 0 4px, var(--field-deep) 4px 8px); }
+.is-critical .marker{ background: repeating-linear-gradient(0deg, var(--plate-red) 0 3px, var(--field-deep) 3px 7px); }
+.row:hover .marker, .row:focus-within .marker{ transform: scaleX(2.2); }
+
+.row .name{ font-variation-settings:"wdth" 108,"wght" 760; font-size: 1.12rem; line-height: 1.14; }
+.row .what{ color: var(--chalk-dim); font-size: 0.92rem; }
+.row .src, .row .tier{ font-family: var(--mono); font-size: 11.5px; color: var(--chalk-dim); }
+.row .src b, .row .tier b{ display:block; color: var(--chalk); font-weight: 700; }
+.row .n{ text-align: right; }
+.row .n .v{
+  display:block; font-variation-settings:"wdth" 104,"wght" 800;
+  font-size: clamp(1.5rem, 3.1vw, 2.5rem); line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--chalk);
+}
+.row .n.crit-open .v{ color: var(--flare); }
+.row .n.crit-zero .v{ color: var(--acid); }
+.row .k{ display:none; font-family: var(--mono); font-size: 10px; color: var(--chalk-dim); letter-spacing:.05em; }
+.row .badgecell{ grid-column: 2 / -1; padding-top: 12px; }
+.row .state{
+  display:inline-block; margin-top: 8px;
+  font-family: var(--mono); font-size: 11px; color: var(--chalk-dim);
+}
+
+/* dim the rest of the ledger while one line is being read */
+.wall:has(.row:hover) .row:not(:hover) > *{ opacity: .45; transition: opacity .16s ease; }
+.wall:has(.row:focus-within) .row:not(:focus-within) > *{ opacity: .45; transition: opacity .16s ease; }
+
+/* the filter, done with :has() and nothing else */
+.wall:has(#f-current:checked) .row:not(.is-current){ display:none; }
+.wall:has(#f-stale:checked)   .row:not(.is-stale){ display:none; }
+.wall:has(#f-crit:checked)    .row:not(.is-critical){ display:none; }
+
+@container (max-width: 900px){
+  .colhead{ display:none; }
+  .row{ grid-template-columns: 10px minmax(0,1fr); gap: 10px 12px; }
+  .row .name, .row .what, .row .src, .row .tier{ grid-column: 2; }
+  .row .counts{ grid-column: 2; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; padding-top: 6px; }
+  .row .n{ text-align: left; }
+  .row .k{ display:block; }
+  .row .n .v{ font-size: clamp(1.35rem, 7vw, 2rem); }
+}
+.row .counts{ display: contents; }
+@container (max-width: 900px){ .row .counts{ display: grid; } }
+
+/* =============================== INSTALL ================================ */
+
+.install{
+  padding-block: clamp(40px, 7vw, 96px);
+  background: var(--acid);
+  color: #0a1a00;
+  border-top: 4px solid var(--field-deep);
+}
+.install h2{ font-size: clamp(1.6rem, 5vw, 3.4rem); color: #0a1a00; max-width: 20ch; }
+.install .lede{ margin-top: 14px; max-width: 54ch; color: #16300a; }
+.cmds{ margin-top: clamp(22px, 3.6vw, 44px); border-top: 2px solid #0a1a00; }
+.cmd{
+  display: grid; gap: 6px 18px; grid-template-columns: 2.4rem minmax(0,1fr);
+  padding-block: 18px; border-bottom: 2px solid #0a1a00; align-items: start;
+}
+.cmd .ix{ font-family: var(--mono); font-size: 12px; font-weight: 700; padding-top: 5px; }
+.cmd code{
+  font-family: var(--mono); font-size: clamp(12px, 2.6vw, 16px);
+  color: #0a1a00; overflow-wrap: anywhere; display:block; font-weight: 600;
+}
+.cmd .cap{ grid-column: 2; font-size: 0.86rem; color: #16300a; }
+
+/* =============================== PAYLOAD ================================ */
+
+.payload{
+  padding-block: clamp(40px, 7vw, 96px);
+  background: var(--field);
+  border-top: 4px solid var(--field-deep);
+}
+.payload h2{ font-size: clamp(1.6rem, 4.6vw, 3.2rem); max-width: 20ch; }
+.payload .lede{ margin-top: 14px; max-width: 56ch; color: var(--chalk-dim); }
+.fields{ margin-top: clamp(22px, 3.6vw, 44px); border-top: var(--hair) solid var(--rule); }
+.field{
+  display: grid; gap: 4px 24px; grid-template-columns: minmax(0,1fr);
+  padding-block: 14px; border-bottom: var(--hair) solid var(--rule);
+}
+@media (min-width: 760px){ .field{ grid-template-columns: 15rem minmax(0,1fr); } }
+.field dt{ font-variation-settings:"wdth" 104,"wght" 740; }
+.field dd{ margin: 0; color: var(--chalk-dim); max-width: 56ch; }
+
+.stop{
+  margin-top: clamp(24px, 4vw, 46px);
+  border-top: 4px solid var(--flare);
+  padding-top: 20px;
+  display: grid; gap: 14px;
+}
+.stop p{ max-width: 58ch; }
+.stop .big{
+  font-size: clamp(1.25rem, 3.4vw, 2.1rem);
+  font-variation-settings:"wdth" 100,"wght" 760; line-height: 1.1;
+  color: var(--chalk);
+}
+.stop .big span{ color: var(--flare); }
+.stop .fine{ color: var(--chalk-dim); }
+
+/* ================================ FOOT ================================== */
+
+.foot{
+  padding-block: clamp(32px, 5vw, 64px);
+  background: var(--field-deep);
+  border-top: var(--hair) solid var(--rule-strong);
+  font-family: var(--mono); font-size: 12px; color: var(--chalk-dim);
+  display: grid; gap: 10px;
+}
+@media (min-width: 820px){ .foot{ grid-template-columns: 1fr auto; align-items: end; } }
+.foot b{ color: var(--chalk); }
+
+/* ========================= SCROLL DRIVEN MOTION =========================
+   Everything below is opacity or transform only, and only exists where the
+   browser supports scroll progress timelines.                              */
+
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+
+    @keyframes ingest{
+      from{ opacity: 0; transform: translate3d(0, 14px, 0); }
+      to  { opacity: 1; transform: none; }
+    }
+    .leg, .plate-row, .field, .cmd, .row{
+      animation: ingest linear both;
+      animation-timeline: view();
+      animation-range: entry 6% cover 26%;
+    }
+
+    @keyframes sweep{ from{ transform: scaleX(0); } to{ transform: scaleX(1); } }
+    .statement, .install, .payload, .wall{ position: relative; }
+    .statement::before, .install::before, .payload::before{
+      content:""; position:absolute; inset-block-start: -4px; inset-inline: 0;
+      block-size: 4px; background: var(--acid); transform-origin: left center;
+      animation: sweep linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+
+    /* --- the signature: a badge scrubbed along a 60 day ruler ---------- */
+    @keyframes runX{
+      from{ transform: translate3d(0,0,0); }
+      to  { transform: translate3d(calc(100cqw - 100%), 0, 0); }
+    }
+    @keyframes cutGreen{ 0%,49.6%{ opacity:1 } 50%,100%{ opacity:0 } }
+    @keyframes cutAmber{ 0%,49.6%{ opacity:0 } 50%,100%{ opacity:1 } }
+    @keyframes reel{
+      from{ transform: translate3d(0,0,0); }
+      to  { transform: translate3d(0, calc(-6 * 2.6rem), 0); }
+    }
+    .runner{
+      animation: runX linear both;
+      animation-timeline: view(block);
+      animation-range: entry 92% exit 8%;
+    }
+    .runner .plate.green{
+      animation: cutGreen linear both;
+      animation-timeline: view(block);
+      animation-range: entry 92% exit 8%;
+    }
+    .runner .plate.amber{
+      animation: cutAmber linear both;
+      animation-timeline: view(block);
+      animation-range: entry 92% exit 8%;
+    }
+    .odo-reel{
+      animation: reel linear both;
+      animation-timing-function: steps(7, jump-none);
+      animation-timeline: view(block);
+      animation-range: entry 92% exit 8%;
+    }
+  }
+}
+
+/* ============================ REDUCED MOTION ============================ */
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .runner{ transform: none !important; width: 100%; display: grid; gap: 12px; }
+  .runner .plate.amber{ position: static; opacity: 1; }
+  .ticks{ display:none; }
+  .odo{ display:none; }
+  .rm-only{ display:block; font-family: var(--mono); font-size: 12.5px; color: var(--chalk-dim); padding-block: 14px 0; }
+  .row .marker{ transform: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar bleed">
+  <span><b>itworks.dev</b> the public wall of reviewed apps</span>
+  <span>Parallax Intelligence</span>
+</div>
+
+<!-- ============================== MASTHEAD ============================== -->
+<header class="mast bleed">
+  <h1 class="wordmark">itworks<span class="dot">.</span>dev</h1>
+  <div class="mast-sub">
+    <p><b>What this is</b> A ledger of apps that finished the vibecheck closeout review, printed in full.</p>
+    <p><b>What it is not</b> A ranking, a score, a leaderboard, or a place where anything gets judged by a model.</p>
+    <p><b>Every line carries</b> an audit date and a count of critical findings still open.</p>
+  </div>
+</header>
+
+<!-- ============================== STATEMENT ============================= -->
+<section class="statement bleed">
+  <h1>Anyone can say a build is done. This wall shows <em>the receipt</em>.</h1>
+
+  <div class="legs">
+    <div class="leg">
+      <span class="ix num">01</span>
+      <p><strong>You build with the vibecheck plugin.</strong> It reviews the work, finds problems, and tracks which ones you fixed and which ones you knowingly accepted.</p>
+    </div>
+    <div class="leg">
+      <span class="ix num">02</span>
+      <p><strong>You run the closeout.</strong> That is the last review before a project goes out. It produces a summary with a date on it.</p>
+    </div>
+    <div class="leg">
+      <span class="ix num">03</span>
+      <p><strong>The summary gets published here, as is.</strong> Same columns for every app. No editing, no highlights reel, no way to hide the bad numbers.</p>
+    </div>
+    <div class="leg">
+      <span class="ix num">04</span>
+      <p><strong>You get a badge for your README.</strong> It shows the audit date and how many critical findings are still open. It updates when the ledger does.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== THE DECAY STRIP ========================== -->
+<section class="strip bleed" aria-labelledby="strip-h">
+  <h2 id="strip-h">The badge ages in public.</h2>
+  <p class="lede">A badge is only worth the date printed on it. Scroll the ruler and watch one real badge get older. On day 30 the plate turns amber and puts the word stale inside itself, so the change is readable even if you cannot see the color.</p>
+
+  <div class="ruler">
+    <div class="track">
+      <div class="runner">
+        <span class="plate green">
+          <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="vibecheck badge, current: 2026-09-07 · 0 critical open">
+            <rect width="326" height="20" fill="#1f1f1f"></rect>
+            <rect x="76" width="250" height="20" fill="#1a7f37"></rect>
+            <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+              <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+              <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-07 · 0 critical open</text>
+            </g>
+          </svg>
+        </span>
+        <span class="plate amber">
+          <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="vibecheck badge, stale: 2026-07-19 · 0 critical open · stale">
+            <rect width="326" height="20" fill="#1f1f1f"></rect>
+            <rect x="76" width="250" height="20" fill="#d29922"></rect>
+            <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+              <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+              <text x="201" y="14" fill="#1f1f1f" text-anchor="middle">2026-07-19 · 0 critical open · stale</text>
+            </g>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="ticks" aria-hidden="true"></div>
+
+    <div class="axis num" aria-hidden="true">
+      <span>0</span><span>10</span><span>20</span><span class="mark">30</span><span>40</span><span>50</span><span>60</span>
+    </div>
+
+    <p class="odo" aria-hidden="true">
+      days since audit
+      <span class="odo-win"><span class="odo-reel num"><b>0</b><b>10</b><b>20</b><b>30</b><b>40</b><b>50</b><b>60</b></span></span>
+    </p>
+    <p class="rm-only">The two plates above are the same badge at day 0 and at day 30. Motion is off because your system asks for it.</p>
+  </div>
+
+  <div class="branch">
+    <p><strong>Time is only one of the two triggers.</strong> A critical finding that is still open turns the plate red on any day, including day 1. Age never outranks an open critical.</p>
+    <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="vibecheck badge, critical open: 2026-09-02 · 1 critical open">
+      <rect width="326" height="20" fill="#1f1f1f"></rect>
+      <rect x="76" width="250" height="20" fill="#b3261e"></rect>
+      <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+        <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+        <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-02 · 1 critical open</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============================ BADGE STATES ============================ -->
+<section class="states bleed" aria-labelledby="states-h">
+  <h2 id="states-h">Three plates. One rule each.</h2>
+  <p class="lede">The badge is an SVG you paste into a README. It is plain, it is flat, and it says what it knows. <strong>The badge can look bad on purpose.</strong> That is the point of publishing it.</p>
+
+  <div class="plates">
+    <div class="plate-row">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="Green plate: vibecheck 2026-09-07 · 0 critical open">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#1a7f37"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-07 · 0 critical open</text>
+        </g>
+      </svg>
+      <p class="why"><b>Green plate, white text.</b> The audit is under 30 days old and no critical finding is open. Plate color 1a7f37 with text ffffff, which clears AA at this size.</p>
+    </div>
+
+    <div class="plate-row">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="Amber plate: vibecheck 2026-07-19 · 0 critical open · stale">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#d29922"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#1f1f1f" text-anchor="middle">2026-07-19 · 0 critical open · stale</text>
+        </g>
+      </svg>
+      <p class="why"><b>Amber plate, dark text, the word stale inside it.</b> The audit is 30 days old or older. Plate color d29922 with text 1f1f1f. The word carries the state, so the color is a second signal and never the only one.</p>
+    </div>
+
+    <div class="plate-row">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="Red plate: vibecheck 2026-09-02 · 1 critical open">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#b3261e"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-02 · 1 critical open</text>
+        </g>
+      </svg>
+      <p class="why"><b>Red plate, white text.</b> At least one critical finding is open. Plate color b3261e with text ffffff. The count is in the text, so a reader who cannot tell red from green still reads 1 critical open.</p>
+    </div>
+  </div>
+
+  <button class="howbtn" popovertarget="how">How the plate is chosen</button>
+
+  <div id="how" popover>
+    <h3>The whole rule, in order</h3>
+    <ul>
+      <li>If the open critical count is 1 or more, the plate is red. Nothing else can override this.</li>
+      <li>Else, if the audit date is 30 or more days behind today, the plate is amber and the word stale is printed inside the plate.</li>
+      <li>Else the plate is green.</li>
+      <li>The date in the plate is always the audit date, written as year, month, day.</li>
+    </ul>
+    <button class="close" popovertarget="how" popovertargetaction="hide">Close</button>
+  </div>
+</section>
+
+<!-- ================================ WALL =============================== -->
+<section class="wall bleed" aria-labelledby="wall-h">
+  <h2 id="wall-h">The wall</h2>
+  <p class="lede">Same columns for everyone. Sorted by audit date, newest first. Below is a preview of how three entries read.</p>
+
+  <fieldset class="filter">
+    <legend>Show</legend>
+    <input type="radio" id="f-all" name="wallfilter" checked>
+    <label for="f-all">everything</label>
+    <input type="radio" id="f-current" name="wallfilter">
+    <label for="f-current">current</label>
+    <input type="radio" id="f-stale" name="wallfilter">
+    <label for="f-stale">stale</label>
+    <input type="radio" id="f-crit" name="wallfilter">
+    <label for="f-crit">critical open</label>
+  </fieldset>
+
+  <div class="colhead" aria-hidden="true">
+    <span></span><span>app</span><span>what it does</span><span>source</span><span>audit</span>
+    <span>found</span><span>fixed</span><span>accepted</span><span>critical</span>
+  </div>
+
+  <article class="row is-current">
+    <div class="marker" aria-hidden="true"></div>
+    <h3 class="name">MSP Sentinel</h3>
+    <p class="what">Monitors managed service alerts and pages the on call engineer.</p>
+    <p class="src"><b>closed</b> source not published</p>
+    <p class="tier"><b>closeout</b> <span class="num">2026-09-07</span></p>
+    <div class="counts">
+      <p class="n"><span class="k">found</span><span class="v num">56</span></p>
+      <p class="n"><span class="k">fixed</span><span class="v num">56</span></p>
+      <p class="n"><span class="k">accepted</span><span class="v num">0</span></p>
+      <p class="n crit-zero"><span class="k">critical open</span><span class="v num">0</span></p>
+    </div>
+    <div class="badgecell">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="MSP Sentinel badge: vibecheck 2026-09-07 · 0 critical open">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#1a7f37"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-07 · 0 critical open</text>
+        </g>
+      </svg>
+      <span class="state">state: current</span>
+    </div>
+  </article>
+
+  <article class="row is-stale">
+    <div class="marker" aria-hidden="true"></div>
+    <h3 class="name">Orbit Cache</h3>
+    <p class="what">Holds API responses for a while so a flaky upstream cannot take the whole app down.</p>
+    <p class="src"><b>public</b> <a href="https://github.com/parallaxsamples/orbitcache">github.com/parallaxsamples/orbitcache</a></p>
+    <p class="tier"><b>audit</b> <span class="num">2026-07-19</span></p>
+    <div class="counts">
+      <p class="n"><span class="k">found</span><span class="v num">31</span></p>
+      <p class="n"><span class="k">fixed</span><span class="v num">28</span></p>
+      <p class="n"><span class="k">accepted</span><span class="v num">3</span></p>
+      <p class="n crit-zero"><span class="k">critical open</span><span class="v num">0</span></p>
+    </div>
+    <div class="badgecell">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="Orbit Cache badge: vibecheck 2026-07-19 · 0 critical open · stale">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#d29922"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#1f1f1f" text-anchor="middle">2026-07-19 · 0 critical open · stale</text>
+        </g>
+      </svg>
+      <span class="state">state: stale, the audit is over 30 days old</span>
+    </div>
+  </article>
+
+  <article class="row is-critical">
+    <div class="marker" aria-hidden="true"></div>
+    <h3 class="name">Ferry Board</h3>
+    <p class="what">Live departure board for a small ferry route, built for a phone held in one hand.</p>
+    <p class="src"><b>public</b> <a href="https://github.com/parallaxsamples/ferryboard">github.com/parallaxsamples/ferryboard</a></p>
+    <p class="tier"><b>closeout</b> <span class="num">2026-09-02</span></p>
+    <div class="counts">
+      <p class="n"><span class="k">found</span><span class="v num">22</span></p>
+      <p class="n"><span class="k">fixed</span><span class="v num">19</span></p>
+      <p class="n"><span class="k">accepted</span><span class="v num">2</span></p>
+      <p class="n crit-open"><span class="k">critical open</span><span class="v num">1</span></p>
+    </div>
+    <div class="badgecell">
+      <svg class="badge" xmlns="http://www.w3.org/2000/svg" width="326" height="20" viewBox="0 0 326 20" role="img" aria-label="Ferry Board badge: vibecheck 2026-09-02 · 1 critical open">
+        <rect width="326" height="20" fill="#1f1f1f"></rect>
+        <rect x="76" width="250" height="20" fill="#b3261e"></rect>
+        <g font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="11">
+          <text x="38" y="14" fill="#ffffff" text-anchor="middle">vibecheck</text>
+          <text x="201" y="14" fill="#ffffff" text-anchor="middle">2026-09-02 · 1 critical open</text>
+        </g>
+      </svg>
+      <span class="state">state: critical open, and it stays red until that finding is closed</span>
+    </div>
+  </article>
+</section>
+
+<!-- =============================== INSTALL ============================== -->
+<section class="install bleed" aria-labelledby="install-h">
+  <h2 id="install-h">Two lines, then build something.</h2>
+  <p class="lede">Paste these into Claude Code. The plugin runs on your machine, against your project, and it is the thing that produces a closeout summary.</p>
+
+  <div class="cmds">
+    <div class="cmd">
+      <span class="ix num">01</span>
+      <code>claude plugin marketplace add parallaxintelligencepartnership/vibecheck</code>
+      <span class="cap">Adds the marketplace so Claude Code knows where to look.</span>
+    </div>
+    <div class="cmd">
+      <span class="ix num">02</span>
+      <code>claude plugin install vibecheck@vibecheck</code>
+      <span class="cap">Installs the plugin. Run the closeout when your project is finished, then publish the summary.</span>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== PAYLOAD ============================== -->
+<section class="payload bleed" aria-labelledby="payload-h">
+  <h2 id="payload-h">Exactly what gets published.</h2>
+  <p class="lede">Seven fields leave your machine when you publish. Here they are, in full, with nothing held back.</p>
+
+  <dl class="fields">
+    <div class="field"><dt>Display name</dt><dd>The name you want people to see. You choose it.</dd></div>
+    <div class="field"><dt>One line on what it does</dt><dd>A single sentence in your own words.</dd></div>
+    <div class="field"><dt>Source label</dt><dd>Either public or closed. If it is public you can add a repository link. If it is closed, the row still publishes and simply says so.</dd></div>
+    <div class="field"><dt>Audit tier and date</dt><dd>Which review produced the summary, and the day it ran, written as year, month, day.</dd></div>
+    <div class="field"><dt>Findings found</dt><dd>How many problems the review raised.</dd></div>
+    <div class="field"><dt>Findings fixed</dt><dd>How many you closed.</dd></div>
+    <div class="field"><dt>Findings accepted</dt><dd>How many you looked at, understood, and chose to live with.</dd></div>
+    <div class="field"><dt>Open critical count</dt><dd>How many critical findings are still open right now. This is the number that turns the plate red.</dd></div>
+  </dl>
+
+  <div class="stop">
+    <p class="big">Nothing else is sent. <span>No code, no file names, no logs, no prompts, no finding text, no model output.</span></p>
+    <p class="fine">The site never runs a model. It reads a small file of published summaries and prints them as static HTML from one Go binary. There is no scoring, no ranking, no analysis step, and no way for us to reach back into your project.</p>
+    <p class="fine">Rows are published by the person who built the app. You can update a row by running the review again, and you can take a row down. Nobody else can edit your line.</p>
+  </div>
+</section>
+
+<footer class="foot bleed">
+  <p><b>Parallax Intelligence</b> builds and ships the vibecheck plugin for Claude Code. This wall is the public side of it.</p>
+  <p>itworks.dev</p>
+</footer>
+
+</body>
+</html>
