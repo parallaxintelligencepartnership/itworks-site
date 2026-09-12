@@ -230,6 +230,27 @@ func TestRateLimit429(t *testing.T) {
 	}
 }
 
+func TestRateLimitCountsMalformedPosts429(t *testing.T) {
+	ts, _ := newTestServer(t, Config{})
+
+	for i := 0; i < rateLimitPerHour; i++ {
+		resp := postJSON(t, ts.URL+"/api/entries", "text/plain", []byte("not json"))
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusUnsupportedMediaType {
+			t.Fatalf("malformed request %d: status = %d, want 415", i+1, resp.StatusCode)
+		}
+	}
+
+	resp := postJSON(t, ts.URL+"/api/entries", "application/json", mustMarshal(t, validPayload()))
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("6th request (valid, after malformed ones): status = %d, want 429", resp.StatusCode)
+	}
+	if ra := resp.Header.Get("Retry-After"); ra == "" {
+		t.Fatalf("6th request: missing Retry-After header")
+	}
+}
+
 func TestPendingCap503(t *testing.T) {
 	ts, _ := newTestServer(t, Config{PendingCap: 2})
 	body := mustMarshal(t, validPayload())
@@ -264,7 +285,7 @@ func TestAdminGuardNoHeader403(t *testing.T) {
 }
 
 func TestAdminGuardCrossOrigin403(t *testing.T) {
-	ts, db := newTestServer(t, Config{})
+	ts, db := newTestServer(t, Config{AdminUsers: []string{"matt"}})
 	id, err := db.Create(store.NewEntry{Name: "A", Summary: "s", Source: "public", AuditTier: "audit", AuditDate: "2026-01-01"})
 	if err != nil {
 		t.Fatalf("Create: %v", err)
@@ -283,8 +304,36 @@ func TestAdminGuardCrossOrigin403(t *testing.T) {
 	}
 }
 
+func TestAdminGuardUserNotInAllowlist403(t *testing.T) {
+	ts, _ := newTestServer(t, Config{AdminUsers: []string{"matthew"}})
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/admin", nil)
+	req.Header.Set("X-Authentik-Username", "anyone")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("status = %d, want 403", resp.StatusCode)
+	}
+}
+
+func TestAdminGuardEmptyAllowlistDeniesAll403(t *testing.T) {
+	ts, _ := newTestServer(t, Config{})
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/admin", nil)
+	req.Header.Set("X-Authentik-Username", "matthew")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("status = %d, want 403", resp.StatusCode)
+	}
+}
+
 func TestAdminGuardApproveSucceeds303(t *testing.T) {
-	ts, db := newTestServer(t, Config{})
+	ts, db := newTestServer(t, Config{AdminUsers: []string{"matt"}})
 	id, err := db.Create(store.NewEntry{Name: "A", Summary: "s", Source: "public", AuditTier: "audit", AuditDate: "2026-01-01"})
 	if err != nil {
 		t.Fatalf("Create: %v", err)

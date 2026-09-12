@@ -27,7 +27,8 @@ const (
 type Config struct {
 	BaseURL    string
 	TrustProxy bool
-	PendingCap int // 0 means defaultPendingCap
+	PendingCap int      // 0 means defaultPendingCap
+	AdminUsers []string // Authentik usernames allowed to use /admin; empty denies all
 }
 
 // Server holds everything the HTTP handlers need.
@@ -37,6 +38,7 @@ type Server struct {
 	baseURL    string
 	trustProxy bool
 	pendingCap int
+	adminUsers map[string]bool
 	limiter    *ipLimiter
 	staticCSS  []byte
 	logger     *log.Logger
@@ -59,12 +61,20 @@ func New(db *store.DB, cfg Config) (*Server, error) {
 		pendingCap = defaultPendingCap
 	}
 
+	adminUsers := make(map[string]bool, len(cfg.AdminUsers))
+	for _, u := range cfg.AdminUsers {
+		if u != "" {
+			adminUsers[u] = true
+		}
+	}
+
 	return &Server{
 		db:         db,
 		tmpl:       tmpl,
 		baseURL:    strings.TrimRight(cfg.BaseURL, "/"),
 		trustProxy: cfg.TrustProxy,
 		pendingCap: pendingCap,
+		adminUsers: adminUsers,
 		limiter:    newIPLimiter(rateLimitPerHour, time.Hour),
 		staticCSS:  css,
 		logger:     log.Default(),
@@ -104,13 +114,15 @@ func securityHeaders(next http.Handler) http.Handler {
 }
 
 // requireAdmin guards /admin routes: the forward auth username header must
-// be present and non empty, and any POST must carry an Origin header whose
-// host matches the request Host. Traefik forward auth is the primary guard;
-// this is defense in depth.
+// be present, non empty, and listed in the ITWORKS_ADMIN_USERS allowlist (an
+// empty or unset allowlist denies every admin request), and any POST must
+// carry an Origin header whose host matches the request Host. Traefik
+// forward auth is the primary guard; this is defense in depth.
 func (s *Server) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := r.Header.Get(adminUserHeader)
-		if user == "" {
+		if user == "" || !s.adminUsers[user] {
+			s.logger.Printf("admin denied user=%q path=%s", user, r.URL.Path)
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}

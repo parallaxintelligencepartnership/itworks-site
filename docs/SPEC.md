@@ -23,6 +23,7 @@ Embed: `//go:embed` of `web/templates/*.html` and `web/static/*` lives in packag
 | ITWORKS_DB | /data/itworks.db | sqlite path (WAL, busy_timeout 5000, MaxOpenConns 1) |
 | ITWORKS_BASE_URL | https://itworks.dev | used to build badge_url and entry_url |
 | ITWORKS_TRUST_PROXY | 0 | when 1, client IP = X-Real-Ip header (Traefik sets it); else RemoteAddr host |
+| ITWORKS_ADMIN_USERS | (empty) | comma separated Authentik usernames allowed to use /admin, trimmed, case sensitive; empty means deny all |
 
 ## Data model (table entries)
 id TEXT PK (12 chars, lowercase base32 alphabet `abcdefghijklmnopqrstuvwxyz234567`, crypto/rand), name TEXT, summary TEXT, source TEXT, repo_url TEXT, audit_tier TEXT, audit_date TEXT (YYYY-MM-DD), found INT, fixed INT, accepted INT, critical_open INT, status TEXT (pending|approved|hidden), created_at TEXT (RFC3339 UTC), approved_at TEXT NULL. No IP addresses are stored, ever.
@@ -43,7 +44,7 @@ id TEXT PK (12 chars, lowercase base32 alphabet `abcdefghijklmnopqrstuvwxyz23456
 | POST /admin/entries/{id}/hide | status=hidden; 303 to /admin |
 Everything else 404. Method mismatch 405.
 
-Admin guard (all /admin routes): request must carry header `X-Authentik-Username` with a non empty value, else 403. Admin POSTs must also carry an `Origin` header whose host equals the request Host, else 403. Traefik forward-auth is the primary guard; this is defense in depth.
+Admin guard (all /admin routes): request must carry header `X-Authentik-Username` with a non empty value that is also present in the `ITWORKS_ADMIN_USERS` allowlist, else 403; an empty or unset allowlist denies every admin request. Denied admin attempts are logged with the offered username. Admin POSTs must also carry an `Origin` header whose host equals the request Host, else 403. Traefik forward-auth is the primary guard; this is defense in depth.
 
 Security headers on every response: `Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'` (fonts are self hosted woff2 files embedded under web/static/fonts, OFL licensed, license file alongside), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`. The badge route may relax CSP to `default-src 'none'` only.
 

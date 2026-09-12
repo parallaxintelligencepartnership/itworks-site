@@ -181,7 +181,11 @@ img{ max-inline-size: 100%; }
   line-height: 1.14; max-width: 30ch; text-wrap: balance;
   border-top: var(--hair) solid var(--rule); padding-top: 14px;
 }
-.mast-badge{ --ph: clamp(24px, 2.6cqi, 34px); justify-self: start; align-self: end; inline-size: 100%; }
+.mast-badge{ --ph: clamp(24px, 2.6cqi, 34px); justify-self: start; align-self: end; inline-size: 100%; display: grid; gap: 8px; justify-items: start; }
+/* same style as the plate captions in the spec section, for the sample badge */
+.mast-caption{
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; color: var(--chalk-dim);
+}
 
 @container page (min-width: 860px){
   .mast{ grid-template-columns: repeat(12, minmax(0,1fr)); column-gap: clamp(18px, 2cqi, 40px); }

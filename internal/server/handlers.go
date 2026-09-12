@@ -81,6 +81,16 @@ func (s *Server) handleAPIList(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAPICreate(w http.ResponseWriter, r *http.Request) {
 	ip := s.clientIP(r)
 
+	// The rate limiter is checked and consumed before anything about the
+	// request body is read, so malformed, oversized, and wrong content type
+	// requests all count against the caller's quota.
+	allowed, retryAfter := s.limiter.Allow(ip, time.Now())
+	if !allowed {
+		w.Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(retryAfter.Seconds()))))
+		s.finishPost(w, ip, http.StatusTooManyRequests, "too many submissions from this address, try again later")
+		return
+	}
+
 	ct := r.Header.Get("Content-Type")
 	if !strings.HasPrefix(ct, "application/json") {
 		s.finishPost(w, ip, http.StatusUnsupportedMediaType, "content type must be application/json")
@@ -102,13 +112,6 @@ func (s *Server) handleAPICreate(w http.ResponseWriter, r *http.Request) {
 	ne, msg := validateSubmit(req, time.Now())
 	if msg != "" {
 		s.finishPost(w, ip, http.StatusBadRequest, msg)
-		return
-	}
-
-	allowed, retryAfter := s.limiter.Allow(ip, time.Now())
-	if !allowed {
-		w.Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(retryAfter.Seconds()))))
-		s.finishPost(w, ip, http.StatusTooManyRequests, "too many submissions from this address, try again later")
 		return
 	}
 

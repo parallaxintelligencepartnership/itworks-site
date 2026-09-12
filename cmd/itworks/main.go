@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -22,11 +23,27 @@ func getenv(key, def string) string {
 	return def
 }
 
+// parseAdminUsers splits a comma separated list of Authentik usernames,
+// trimming whitespace and dropping empty entries. An empty or unset
+// ITWORKS_ADMIN_USERS yields an empty slice, which denies every admin
+// request.
+func parseAdminUsers(v string) []string {
+	var out []string
+	for _, part := range strings.Split(v, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
+}
+
 func main() {
 	addr := getenv("ITWORKS_ADDR", ":8080")
 	dbPath := getenv("ITWORKS_DB", "/data/itworks.db")
 	baseURL := getenv("ITWORKS_BASE_URL", "https://itworks.dev")
 	trustProxy := getenv("ITWORKS_TRUST_PROXY", "0") == "1"
+	adminUsers := parseAdminUsers(getenv("ITWORKS_ADMIN_USERS", ""))
 
 	db, err := store.Open(dbPath)
 	if err != nil {
@@ -37,6 +54,7 @@ func main() {
 	srv, err := server.New(db, server.Config{
 		BaseURL:    baseURL,
 		TrustProxy: trustProxy,
+		AdminUsers: adminUsers,
 	})
 	if err != nil {
 		log.Fatalf("build server: %v", err)

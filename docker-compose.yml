@@ -8,6 +8,8 @@ services:
     environment:
       ITWORKS_TRUST_PROXY: "1"
       ITWORKS_BASE_URL: https://itworks.dev
+      # must match the X-authentik-username Traefik forwards for Matt; verify at first deploy
+      ITWORKS_ADMIN_USERS: matthew
     networks:
       - dmz-infrastructure_dmz-public
     labels:

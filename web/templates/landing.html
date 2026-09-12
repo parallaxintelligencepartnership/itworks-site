@@ -4,7 +4,14 @@
 <header class="mast bleed snap">
 <h1 class="wordmark">itworks<span class="dot">.</span>dev</h1>
 <p class="tag">Anyone can say it works. This wall prints the receipt.</p>
-<div class="mast-badge b">{{.Badges.Green}}</div>
+{{if .Entries}}
+<a class="mast-badge b" href="{{(index .Entries 0).EntryURL}}"><img class="badge" src="{{(index .Entries 0).BadgeURL}}" alt="Audit badge for {{(index .Entries 0).Name}}: {{(index .Entries 0).BadgeColor}}, {{(index .Entries 0).AuditDate}}, {{(index .Entries 0).CriticalOpen}} critical open"></a>
+{{else}}
+<div class="mast-badge b">
+{{.Badges.Green}}
+<p class="mast-caption">example</p>
+</div>
+{{end}}
 </header>
 
 <section class="flow-sec bleed">

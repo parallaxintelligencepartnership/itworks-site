@@ -7,7 +7,7 @@ last_checkpoint: none
 last_audit: none
 lens_debt:
   security-auth: 0
-  llm-security: 0
+  llm-security: 1
   real-data: 0
-  testing: 0
-  production-readiness: 0
+  testing: 1
+  production-readiness: 1
