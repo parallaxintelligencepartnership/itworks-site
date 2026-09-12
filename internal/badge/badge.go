@@ -17,11 +17,12 @@ const (
 
 // hex values for each badge color, plus the fixed label background and text.
 const (
-	hexGreen = "#3fb950"
-	hexAmber = "#d29922"
-	hexRed   = "#f85149"
-	hexLabel = "#24292f"
-	hexText  = "#ffffff"
+	hexGreen    = "#1a7f37"
+	hexAmber    = "#d29922"
+	hexRed      = "#b3261e"
+	hexLabel    = "#24292f"
+	hexText     = "#ffffff"
+	hexAmberInk = "#1f1f1f"
 )
 
 const (
@@ -61,6 +62,15 @@ func hexFor(color string) string {
 	}
 }
 
+// textHexFor returns the right-segment text color for the given badge color.
+// Amber uses dark ink text; green and red use white.
+func textHexFor(color string) string {
+	if color == ColorAmber {
+		return hexAmberInk
+	}
+	return hexText
+}
+
 func segWidth(s string) int {
 	return int(math.Round(float64(utf8.RuneCountInString(s))*charWidth)) + int(segPadPerSide*2)
 }
@@ -69,8 +79,16 @@ func segWidth(s string) int {
 // audit date to display, criticalOpen the open critical count, and color one
 // of "green", "amber", "red" (the right segment fill).
 func Render(date string, criticalOpen int, color string) []byte {
-	rightText := fmt.Sprintf("%s · %d critical open", date, criticalOpen)
+	var rightText, title string
+	if color == ColorAmber {
+		rightText = fmt.Sprintf("%s · stale · %d critical open", date, criticalOpen)
+		title = fmt.Sprintf("Audit %s, stale, %d critical open, %s", date, criticalOpen, color)
+	} else {
+		rightText = fmt.Sprintf("%s · %d critical open", date, criticalOpen)
+		title = fmt.Sprintf("Audit %s, %d critical open, %s", date, criticalOpen, color)
+	}
 	rightHex := hexFor(color)
+	rightTextHex := textHexFor(color)
 
 	leftW := segWidth(leftLabel)
 	rightW := segWidth(rightText)
@@ -79,24 +97,22 @@ func Render(date string, criticalOpen int, color string) []byte {
 	leftCenter := leftW / 2
 	rightCenter := leftW + rightW/2
 
-	title := fmt.Sprintf("Audit %s, %d critical open, %s", date, criticalOpen, color)
-
 	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="%s">`+
 		`<title>%s</title>`+
 		`<rect width="%d" height="%d" fill="%s"/>`+
 		`<rect x="%d" width="%d" height="%d" fill="%s"/>`+
-		`<g fill="%s" font-family="%s" font-size="%d" text-anchor="middle">`+
-		`<text x="%d" y="14">%s</text>`+
-		`<text x="%d" y="14">%s</text>`+
+		`<g font-family="%s" font-size="%d" text-anchor="middle">`+
+		`<text x="%d" y="14" fill="%s">%s</text>`+
+		`<text x="%d" y="14" fill="%s">%s</text>`+
 		`</g>`+
 		`</svg>`,
 		totalW, badgeHeight, title,
 		title,
 		leftW, badgeHeight, hexLabel,
 		leftW, rightW, badgeHeight, rightHex,
-		hexText, fontFamily, fontSize,
-		leftCenter, leftLabel,
-		rightCenter, rightText,
+		fontFamily, fontSize,
+		leftCenter, hexText, leftLabel,
+		rightCenter, rightTextHex, rightText,
 	)
 	return []byte(svg)
 }
