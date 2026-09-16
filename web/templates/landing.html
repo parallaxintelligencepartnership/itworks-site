@@ -5,10 +5,10 @@
 <h1 class="wordmark">itworks<span class="dot">.</span>dev</h1>
 <p class="tag">Anyone can say it works. This wall prints the receipt.</p>
 {{if .Entries}}
-<a class="mast-badge b" href="{{(index .Entries 0).EntryURL}}"><img class="badge" src="{{(index .Entries 0).BadgeURL}}" alt="Audit badge for {{(index .Entries 0).Name}}: {{(index .Entries 0).BadgeColor}}, {{(index .Entries 0).AuditDate}}, {{(index .Entries 0).CriticalOpen}} critical open"></a>
+<a class="mast-badge b" href="{{(index .Entries 0).EntryPath}}"><img class="badge" src="{{(index .Entries 0).BadgePath}}" alt="Audit badge for {{(index .Entries 0).Name}}: {{(index .Entries 0).BadgeColor}}, {{(index .Entries 0).AuditDate}}, {{(index .Entries 0).CriticalOpen}} critical open"></a>
 {{else}}
 <div class="mast-badge b">
-{{.Badges.Green}}
+<img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open">
 <p class="mast-caption">example</p>
 </div>
 {{end}}
@@ -32,8 +32,8 @@
 <div class="ruler">
 <div class="track" aria-hidden="true">
 <div class="runner">
-<span class="plate green b">{{.Badges.Green}}</span>
-<span class="plate amber b">{{.Badges.Amber}}</span>
+<span class="plate green b"><img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open"></span>
+<span class="plate amber b"><img class="badge" src="/badge/example-amber.svg" alt="Example audit badge: amber, audited 40 days ago, 0 critical open"></span>
 </div>
 </div>
 
@@ -57,17 +57,17 @@
 
 <div class="plates">
 <figure class="fig fig-current">
-<span class="lg b">{{.Badges.Green}}</span>
+<span class="lg b"><img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open"></span>
 <figcaption>current</figcaption>
 </figure>
 
 <figure class="fig fig-stale">
-<span class="lg b">{{.Badges.Amber}}</span>
+<span class="lg b"><img class="badge" src="/badge/example-amber.svg" alt="Example audit badge: amber, audited 40 days ago, 0 critical open"></span>
 <figcaption>stale</figcaption>
 </figure>
 
 <figure class="fig fig-crit">
-<span class="lg b">{{.Badges.Red}}</span>
+<span class="lg b"><img class="badge" src="/badge/example-red.svg" alt="Example audit badge: red, 1 critical open"></span>
 <figcaption>critical open</figcaption>
 </figure>
 </div>
@@ -90,7 +90,7 @@
 <h2 class="h-lg" id="wall-h">The wall</h2>
 <p class="lede">Same columns for everyone.</p>
 </div>
-<p class="wall-more"><a href="/wall">every entry</a></p>
+<p class="wall-more"><a href="/wall/">every entry</a></p>
 </div>
 
 {{if .Entries}}
@@ -115,7 +115,7 @@
 <h2 class="h-lg" id="payload-h">What gets published.</h2>
 <ul class="fields">
 <li>name</li><li>summary</li><li>source</li><li>audit</li>
-<li>found</li><li>fixed</li><li>accepted</li><li>criticals</li>
+<li>found</li><li>fixed</li><li>accepted</li><li>criticals open</li><li>criticals accepted</li>
 </ul>
 <div class="stop">
 <p class="big">Nothing else leaves your machine.</p>

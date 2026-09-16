@@ -12,7 +12,7 @@
 <div class="page">
 <div class="bar bleed">
 <a class="bar-id" href="/">itworks<i>.</i>dev</a>
-<nav class="bar-nav" aria-label="Main"><a href="/wall">the wall</a></nav>
+<nav class="bar-nav" aria-label="Main"><a href="/wall/">the wall</a></nav>
 <span class="bar-key" aria-hidden="true"><i class="k-c"></i><i class="k-s"></i><i class="k-x"></i></span>
 <span class="prog" aria-hidden="true"></span>
 </div>
@@ -21,7 +21,7 @@
 {{define "footer"}}<footer class="foot bleed">
 <p><b>Parallax Intelligence</b></p>
 <p>Every entry is a closeout summary. This site never runs a model.</p>
-<p class="repo"><a href="https://github.com/parallaxintelligencepartnership/itworks">github.com/parallaxintelligencepartnership/itworks</a></p>
+<p class="repo"><a href="https://github.com/parallaxintelligencepartnership/itworks" rel="nofollow noopener noreferrer">github.com/parallaxintelligencepartnership/itworks</a></p>
 </footer>
 </div>
 </body>
@@ -35,8 +35,8 @@
 {{define "ledgerrow"}}<article class="row {{if eq .BadgeColor "red"}}is-critical{{else if eq .BadgeColor "amber"}}is-stale{{else}}is-current{{end}}">
 <div class="marker" aria-hidden="true"></div>
 <div class="id">
-<h3 class="name"><a href="/e/{{.ID}}">{{.Name}}</a></h3>
-<p class="src"><b>{{.Source}}</b> {{if .RepoURL}}<a href="{{.RepoURL}}">repo</a>{{else}}source not published{{end}}</p>
+<h3 class="name"><a href="{{.EntryPath}}">{{.Name}}</a></h3>
+<p class="src"><b>{{.Source}}</b> {{if .RepoURL}}<a href="{{.RepoURL}}" rel="nofollow noopener noreferrer">repo</a>{{else}}source not published{{end}}</p>
 </div>
 <p class="what">{{.Summary}}</p>
 <p class="when"><b>{{.AuditTier}}</b> <span class="num">{{.AuditDate}}</span></p>
@@ -47,7 +47,7 @@
 <p class="n {{if .CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalOpen}}</span></p>
 </div>
 <div class="badgecell">
-<img class="badge" src="{{.BadgeURL}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open">
+<img class="badge" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open">
 <span class="state">{{if eq .BadgeColor "red"}}critical open{{else if eq .BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
 </div>
 </article>{{end}}
