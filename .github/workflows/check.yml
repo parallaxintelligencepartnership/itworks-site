@@ -1,0 +1,67 @@
+name: check
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - run: go run ./cmd/build -check
+
+      - name: entry pull requests may only add one file under entries
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          ASSOCIATION: ${{ github.event.pull_request.author_association }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_REF"
+          RANGE="origin/${BASE_REF}...HEAD"
+
+          echo "Files changed by this pull request:"
+          git diff --name-only "$RANGE"
+
+          if [ "$ASSOCIATION" = "OWNER" ] || [ "$ASSOCIATION" = "MEMBER" ]; then
+            echo "Author association is $ASSOCIATION, so this check does not apply."
+            exit 0
+          fi
+
+          fail=0
+
+          outside=$(git diff --name-only "$RANGE" | grep -v '^entries/' || true)
+          if [ -n "$outside" ]; then
+            echo "This pull request changes files outside entries/:"
+            echo "$outside" | sed 's/^/  /'
+            fail=1
+          fi
+
+          added=$(git diff --name-status "$RANGE" | awk '$1 ~ /^A/ { print $2 }')
+          count=$(printf '%s' "$added" | grep -c . || true)
+          if [ "$count" -gt 1 ]; then
+            echo "This pull request adds $count files; an entry is one file:"
+            echo "$added" | sed 's/^/  /'
+            fail=1
+          fi
+
+          touched=$(git diff --name-status "$RANGE" | awk '$1 !~ /^A/ { print $2 }')
+          if [ -n "$touched" ]; then
+            echo "This pull request changes or removes entries that are already on the wall:"
+            echo "$touched" | sed 's/^/  /'
+            fail=1
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "A submission adds exactly one file under entries/ and touches nothing else."
+            echo "Someone from the project has to make any other change."
+            exit 1
+          fi
+          echo "This pull request adds one entry and nothing else."
