@@ -102,7 +102,7 @@ func TestRenderAmberIsStaleWithInkText(t *testing.T) {
 	if !strings.Contains(svg, hexAmberInk) {
 		t.Errorf("amber render missing ink text hex %s: %s", hexAmberInk, svg)
 	}
-	if !strings.Contains(svg, "Audit 2026-01-01, stale, 2 critical open, amber") {
+	if !strings.Contains(svg, "Audit 2026-01-01, stale, 2 critical, amber") {
 		t.Errorf("amber render missing expected title: %s", svg)
 	}
 }
@@ -161,21 +161,19 @@ func TestRenderColorHexesAreExclusiveToTheirState(t *testing.T) {
 	}
 }
 
-func TestRenderVisibleTextNeverSaysCriticalOpen(t *testing.T) {
+func TestRenderNeverSaysCriticalOpen(t *testing.T) {
 	for _, color := range []string{ColorGreen, ColorAmber, ColorRed} {
 		svg := string(Render("2026-01-01", 1, color))
-		// "critical open" is only allowed inside the accessible <title>.
+		if strings.Contains(svg, "critical open") {
+			t.Errorf("%s render contains 'critical open': %s", color, svg)
+		}
 		titleStart := strings.Index(svg, "<title")
 		titleEnd := strings.Index(svg, "</title>")
 		if titleStart < 0 || titleEnd < 0 {
 			t.Fatalf("%s render missing <title>: %s", color, svg)
 		}
-		withoutTitle := svg[:titleStart] + svg[titleEnd+len("</title>"):]
-		if strings.Contains(withoutTitle, "critical open") {
-			t.Errorf("%s render contains 'critical open' outside the title: %s", color, svg)
-		}
-		if !strings.Contains(svg[titleStart:titleEnd], "critical open") {
-			t.Errorf("%s render title missing 'critical open': %s", color, svg)
+		if !strings.Contains(svg[titleStart:titleEnd], "1 critical") {
+			t.Errorf("%s render title missing '1 critical': %s", color, svg)
 		}
 	}
 }

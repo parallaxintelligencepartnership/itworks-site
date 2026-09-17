@@ -110,10 +110,10 @@ func Render(date string, criticalOpen int, color string) []byte {
 	var rightText, title string
 	if color == ColorAmber {
 		rightText = fmt.Sprintf("%s · %d critical · stale", date, criticalOpen)
-		title = fmt.Sprintf("Audit %s, stale, %d critical open, %s", date, criticalOpen, color)
+		title = fmt.Sprintf("Audit %s, stale, %d critical, %s", date, criticalOpen, color)
 	} else {
 		rightText = fmt.Sprintf("%s · %d critical", date, criticalOpen)
-		title = fmt.Sprintf("Audit %s, %d critical open, %s", date, criticalOpen, color)
+		title = fmt.Sprintf("Audit %s, %d critical, %s", date, criticalOpen, color)
 	}
 	stateHex := hexFor(color)
 	rightTextHex := textHexFor(color)

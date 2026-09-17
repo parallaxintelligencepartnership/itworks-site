@@ -154,8 +154,8 @@ not a dash), so the amber state survives grayscale and a screen reader.
 Font: `-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif`
 600 weight, size 11, with `textLength` pinned to the computed width so layout
 is stable across platforms. `<title>` reads
-`Audit <date>, <N> critical open, <color>` (amber:
-`Audit <date>, stale, <N> critical open, amber`). No external references in
+`Audit <date>, <N> critical, <color>` (amber:
+`Audit <date>, stale, <N> critical, amber`). No external references in
 the SVG.
 
 The entry page prints `critical open` and `critical accepted by the owner` as
