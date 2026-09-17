@@ -123,6 +123,12 @@ func TestValidateRejectsFormatCharacters(t *testing.T) {
 		{"pop directional isolate", "paypal" + string(rune(0x2069))},
 		{"right to left mark", "paypal" + string(rune(0x200F))},
 		{"arabic letter mark", "paypal" + string(rune(0x061C))},
+		{"no-break space", "pay" + string(rune(0x00A0)) + "pal"},
+		{"hangul filler", "pay" + string(rune(0x3164)) + "pal"},
+		{"hangul choseong filler", "pay" + string(rune(0x115F)) + "pal"},
+		{"hangul jungseong filler", "pay" + string(rune(0x1160)) + "pal"},
+		{"variation selector-16", "pay" + string(rune(0xFE0F)) + "pal"},
+		{"braille pattern blank", "pay" + string(rune(0x2800)) + "pal"},
 	}
 
 	for _, h := range hostile {

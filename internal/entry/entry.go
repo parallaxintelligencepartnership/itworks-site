@@ -224,12 +224,17 @@ func Validate(rec Record, now time.Time) (Entry, string) {
 	return e, ""
 }
 
-// isPrintable rejects control characters (category Cc) and format
-// characters (category Cf). Cf carries the invisible runes that let a name
-// read as one thing and store as another: the bidi overrides and isolates
-// U+202A to U+202E and U+2066 to U+2069, the zero width joiners and marks
-// U+200B to U+200F, and the byte order mark U+FEFF. Letters with combining
-// marks and emoji stay legal.
+// isPrintable rejects control characters (category Cc), format characters
+// (category Cf), and other invisible or non-space-bar whitespace runes. Cf
+// carries the invisible runes that let a name read as one thing and store
+// as another: the bidi overrides and isolates U+202A to U+202E and U+2066
+// to U+2069, the zero width joiners and marks U+200B to U+200F, and the
+// byte order mark U+FEFF. Also rejected: U+00A0 (no-break space), U+3164
+// (Hangul filler), U+115F and U+1160 (Hangul choseong/jungseong fillers),
+// U+FE0F (variation selector-16), U+2800 (braille pattern blank), every
+// rune in the line and paragraph separator categories Zl and Zp, and any
+// rune for which unicode.IsSpace is true other than U+0020, the ordinary
+// space bar. Letters with combining marks and emoji stay legal.
 func isPrintable(s string) bool {
 	if !utf8.ValidString(s) {
 		return false
@@ -248,6 +253,16 @@ func isPrintable(s string) bool {
 			return false
 		}
 		if r == 0xFEFF {
+			return false
+		}
+		switch r {
+		case 0x00A0, 0x3164, 0x115F, 0x1160, 0xFE0F, 0x2800:
+			return false
+		}
+		if unicode.Is(unicode.Zl, r) || unicode.Is(unicode.Zp, r) {
+			return false
+		}
+		if unicode.IsSpace(r) && r != 0x0020 {
 			return false
 		}
 	}
