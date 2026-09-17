@@ -80,7 +80,15 @@ func TestValidateTable(t *testing.T) {
 			return r
 		}, true},
 		{"critical open plus critical accepted at found", func(r Record) Record {
-			r.Found, r.Fixed, r.CriticalOpen, r.CriticalAccepted = intp(4), intp(0), intp(2), intp(2)
+			r.Found, r.Fixed, r.Accepted, r.CriticalOpen, r.CriticalAccepted = intp(4), intp(0), intp(2), intp(2), intp(2)
+			return r
+		}, false},
+		{"critical accepted exceeds accepted", func(r Record) Record {
+			r.Found, r.Fixed, r.Accepted, r.CriticalOpen, r.CriticalAccepted = intp(4), intp(0), intp(0), intp(2), intp(2)
+			return r
+		}, true},
+		{"critical accepted at accepted", func(r Record) Record {
+			r.Found, r.Fixed, r.Accepted, r.CriticalOpen, r.CriticalAccepted = intp(4), intp(0), intp(2), intp(0), intp(2)
 			return r
 		}, false},
 	}

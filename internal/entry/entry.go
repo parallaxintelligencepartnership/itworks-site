@@ -211,6 +211,9 @@ func Validate(rec Record, now time.Time) (Entry, string) {
 	if criticalOpen+criticalAccepted > found {
 		return e, "critical open plus critical accepted must not exceed found"
 	}
+	if criticalAccepted > accepted {
+		return e, "critical_accepted must not exceed accepted"
+	}
 
 	e = Entry{
 		Name: name, Summary: summary, Source: source, RepoURL: repoURL,

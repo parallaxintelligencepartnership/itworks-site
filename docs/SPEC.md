@@ -86,8 +86,9 @@ listed here is an error, and so is a file holding more than one JSON value.
 | critical_open | int | 0 to 9999 |
 | critical_accepted | int | 0 to 9999 |
 
-Across fields: `fixed + accepted <= found`, `critical_open <= found`, and
-`critical_open + critical_accepted <= found`.
+Across fields: `fixed + accepted <= found`, `critical_open <= found`,
+`critical_open + critical_accepted <= found`, and
+`critical_accepted <= accepted`.
 
 The character rule rejects control characters (Unicode category Cc) and
 format characters (category Cf), which covers the bidi overrides and isolates
