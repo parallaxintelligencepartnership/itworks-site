@@ -1,70 +1,98 @@
 # itworks.dev
 
-A public wall of AI coding agent audit results. Submitters POST an audit summary and get a badge to embed in their repo; entries need admin approval before they show on the wall.
+A public wall of audit results for apps built with the itworks plugin. Each
+entry carries the audit date, what was found, what was fixed, and how many
+critical findings are still open, plus one SVG badge the owner can put in a
+README.
 
-## Local run
+The site is static. A Go command reads the entry files, writes HTML and SVG
+into a directory, and GitHub Pages serves it. No server, no database, no
+container, and no dependencies outside the Go standard library. The site
+never runs a model.
+
+## How an entry gets on the wall
+
+1. Run the itworks closeout. It prints the JSON summary.
+2. Open a pull request that adds exactly one file, `entries/<id>.json`, where
+   `<id>` is 12 characters of lowercase base32 (a to z and 2 to 7). The
+   closeout prints an id you can use.
+3. Every pull request runs the tests, validates every entry, and checks that
+   a submission adds one file under `entries/` and touches nothing else.
+4. Merging the pull request is the approval. The entry appears on the next
+   build, and the approval date is the date of the merge commit that added
+   the file.
+5. Deleting the file hides the entry. Its page and its badge are gone on the
+   next build.
+
+Until a pull request is merged there is no badge. The badge starts rendering
+after the merge.
+
+## The JSON contract
+
+Every field, every limit, and the badge colour rules live in one place so
+they cannot drift: [docs/SPEC.md](docs/SPEC.md). The rules table there is
+checked against the code by a test, so if the two ever disagree the build
+fails.
+
+The short version: `name`, `summary`, `source`, `repo_url`, `audit_tier`,
+`audit_date`, `found`, `fixed`, `accepted`, `critical_open` and
+`critical_accepted`, all required, no other keys allowed, and no `id` key
+because the file name is the id. See
+[fixtures/seed-msp-sentinel.json](fixtures/seed-msp-sentinel.json) for a
+complete example.
+
+## Local commands
+
+Build the site and read it in a browser:
 
 ```
-go run ./cmd/itworks
+go run ./cmd/build -out dist
+python3 -m http.server -d dist 8080
 ```
 
-Environment variables (all optional, defaults shown):
+Then open http://localhost:8080.
+
+Validate the entries without writing anything, which is what a pull request
+runs:
 
 ```
-ITWORKS_ADDR=:8080
-ITWORKS_DB=/data/itworks.db
-ITWORKS_BASE_URL=https://itworks.dev
-ITWORKS_TRUST_PROXY=0
-ITWORKS_ADMIN_USERS=matthew
+go run ./cmd/build -check
 ```
 
-For a local run, point `ITWORKS_DB` at a writable path in the repo, e.g. `ITWORKS_DB=./data/itworks.db go run ./cmd/itworks` (the `data/` directory is gitignored).
-
-## Tests
+Run the tests:
 
 ```
 go test ./...
 ```
 
-## Runbook (first deploy)
+Two more flags help when you are working on the badge: `-today 2026-01-31`
+renders against a fixed date, so you can see the amber plate without waiting
+30 days, and `-entries <dir>` reads the entry files from somewhere else.
 
-1. On pi3, create the deploy directory: `ssh pi3 "mkdir -p /opt/itworks"`.
-2. Point DNS: create an A record for `itworks.dev` to `185.187.235.55`.
-3. From your machine, run the deploy: `./deploy.sh --go`. This rsyncs the repo to `pi3:/opt/itworks`, then builds and starts the stack there, then checks `https://itworks.dev/healthz`.
-4. Submit the first entry (see `fixtures/seed-msp-sentinel.json` and `scripts/seed.sh`), then approve it at `https://itworks.dev/admin`. That page sits behind Authentik forward-auth on pi3 (`authentik-auth@file`), so you will be prompted to sign in there before you see the admin list. The app's own allowlist, `ITWORKS_ADMIN_USERS` in `docker-compose.yml`, must also match the `X-Authentik-Username` value Traefik forwards for you; verify this at first deploy, since a mismatch means Authentik lets you in but the app still returns 403.
-5. Post-deploy checks:
-   - `curl -m 5 http://185.187.235.55:8080/` must fail to connect (no port is published; Traefik is the only way in).
-   - `curl https://itworks.dev/badge/<id>.svg` returns an SVG badge for the entry you just approved.
+## Pointing itworks.dev at GitHub Pages
 
-## Backup
+DNS records at the registrar for `itworks.dev`:
 
-The whole database is one SQLite file inside the `itworks-data` named volume. To copy it out:
+| Type | Name | Value |
+|---|---|---|
+| A | @ | 185.199.108.153 |
+| A | @ | 185.199.109.153 |
+| A | @ | 185.199.110.153 |
+| A | @ | 185.199.111.153 |
+| AAAA | @ | 2606:50c0:8000::153 |
+| AAAA | @ | 2606:50c0:8001::153 |
+| AAAA | @ | 2606:50c0:8002::153 |
+| AAAA | @ | 2606:50c0:8003::153 |
+| CNAME | www | parallaxintelligencepartnership.github.io |
 
-```
-docker run --rm -v itworks-data:/data -v "$(pwd)":/backup alpine \
-  cp /data/itworks.db /backup/itworks-$(date +%Y%m%d).db
-```
+Repository settings to flip, under Settings then Pages:
 
-Run that on pi3, from `/opt/itworks`.
+1. Source: GitHub Actions.
+2. Custom domain: `itworks.dev`. The build writes a `CNAME` file into the
+   artifact, so the setting and the file agree.
+3. Enforce HTTPS: turn it on once GitHub reports the certificate as issued.
+   That takes a few minutes after the DNS records resolve.
 
-## Rollback
-
-```
-git checkout <previous-tag>
-./deploy.sh --go
-```
-
-This re-syncs the older code to pi3 and rebuilds and restarts the container. The database in `itworks-data` is untouched by a rollback since it lives in a separate named volume, not in the repo checkout.
-
-## Post deploy checks from checkpoint 1
-
-Two findings can only be verified against the live Traefik route. Run both right after the first deploy and record the result in .itworks/REVIEWS.md.
-
-1. Admin allowlist matches Authentik. Sign in as Matt and open https://itworks.dev/admin (expect 200). The value in ITWORKS_ADMIN_USERS must equal the X-authentik-username Traefik forwards; if the page is 403 for Matt, check the container log for `admin denied user=` and set the variable to that name in docker-compose.yml, then redeploy.
-2. Rate limiting keys on the real client. Traefik must overwrite X-Real-Ip. Proof:
-
-```
-for i in $(seq 1 6); do curl -s -o /dev/null -w "%{http_code}\n" -H "X-Real-Ip: 10.0.0.$i" -H "Content-Type: application/json" -d @fixtures/seed-msp-sentinel.json https://itworks.dev/api/entries; done
-```
-
-The sixth line must be 429. If every line is 201, the header is trusted from the client and ITWORKS_TRUST_PROXY must key on the last X-Forwarded-For hop instead. The six test entries stay pending; hide them from /admin afterwards.
+The site rebuilds on every push to `main`, every day at 05:17 UTC, and on
+demand from the Actions tab. The daily build is what turns a badge amber on
+the thirtieth day after its audit.

@@ -1,3 +1,3 @@
-This fixture seeds one sample entry (MSP Sentinel) so the wall page has content to show before real submissions arrive.
+This fixture is one sample entry (MSP Sentinel), used by the build tests and as a worked example of the entry file.
 It names no employer or client; the summary and fields describe only the audited software itself.
-To load it, run `scripts/seed.sh fixtures/seed-msp-sentinel.json` (set `ITWORKS_URL` first if the server is not at the default `http://localhost:8080`).
+To see it on a local wall, copy it to `entries/<id>.json` with a 12 character id, then run `go run ./cmd/build -out dist`.

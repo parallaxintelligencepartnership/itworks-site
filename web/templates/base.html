@@ -47,7 +47,7 @@
 <p class="n {{if .CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalOpen}}</span></p>
 </div>
 <div class="badgecell">
-<img class="badge" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open">
+<img class="badge" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open, {{.CriticalAccepted}} critical accepted by the owner">
 <span class="state">{{if eq .BadgeColor "red"}}critical open{{else if eq .BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
 </div>
 </article>{{end}}

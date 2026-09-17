@@ -8,7 +8,7 @@
 <p class="lede">{{.Entry.Summary}}</p>
 </div>
 <div class="sheet-badge b">
-<img class="badge" src="{{.Entry.BadgePath}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open">
+<img class="badge" src="{{.Entry.BadgePath}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open, {{.Entry.CriticalAccepted}} critical accepted by the owner">
 <span class="state">{{if eq .Entry.BadgeColor "red"}}critical open{{else if eq .Entry.BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
 </div>
 </div>
