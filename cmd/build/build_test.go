@@ -108,6 +108,40 @@ func TestBuildRendersEverySiteFile(t *testing.T) {
 	}
 }
 
+// TestBuildRemovesEntriesDeletedFromTheSource is the ADVISORY fix: render
+// never cleared outDir, so a removed entry's page and badge survived an
+// incremental local build.
+func TestBuildRemovesEntriesDeletedFromTheSource(t *testing.T) {
+	entriesDir := entriesDirWithFixture(t)
+	out := t.TempDir()
+	mustRun(t, entriesDir, out, buildToday, false)
+
+	page := filepath.Join(out, "e", fixtureID, "index.html")
+	badge := filepath.Join(out, "badge", fixtureID+".svg")
+	if _, err := os.Stat(page); err != nil {
+		t.Fatalf("first build missing entry page: %v", err)
+	}
+	if _, err := os.Stat(badge); err != nil {
+		t.Fatalf("first build missing badge: %v", err)
+	}
+
+	if err := os.Remove(filepath.Join(entriesDir, fixtureID+".json")); err != nil {
+		t.Fatalf("remove the entry: %v", err)
+	}
+	mustRun(t, entriesDir, out, buildToday, false)
+
+	if _, err := os.Stat(page); !os.IsNotExist(err) {
+		t.Fatalf("entry page still exists after the entry was removed: err=%v", err)
+	}
+	if _, err := os.Stat(badge); !os.IsNotExist(err) {
+		t.Fatalf("badge still exists after the entry was removed: err=%v", err)
+	}
+	// The rest of the site is still there.
+	if _, err := os.Stat(filepath.Join(out, "index.html")); err != nil {
+		t.Fatalf("index.html missing after rebuild: %v", err)
+	}
+}
+
 func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
 	out := t.TempDir()
 	mustRun(t, entriesDirWithFixture(t), out, buildToday, false)

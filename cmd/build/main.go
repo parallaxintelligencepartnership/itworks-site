@@ -102,6 +102,9 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		return fmt.Errorf("parse templates: %w", err)
 	}
 
+	if err := cleanOutDir(outDir); err != nil {
+		return err
+	}
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
 	}
@@ -168,6 +171,31 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 	}
 	// GitHub Pages runs Jekyll over an artifact unless this file is there.
 	return writeFile(outDir, ".nojekyll", nil)
+}
+
+// ownedOutputPaths are the files and directories render ever writes,
+// relative to outDir. cleanOutDir removes only these, so it never touches
+// anything a maintainer might have placed in outDir by hand.
+var ownedOutputPaths = []string{
+	"index.html", "404.html", "CNAME", ".nojekyll",
+	"wall", "e", "badge", "api", "static",
+}
+
+// cleanOutDir removes everything render owns from a previous build, so an
+// entry that was removed from entries/ does not leave its page or badge
+// behind on the next build. It only ever removes the specific files and
+// directories render writes, and only when outDir is non-empty and not
+// "/" or the filesystem root.
+func cleanOutDir(outDir string) error {
+	if outDir == "" || outDir == "/" || outDir == string(filepath.Separator) {
+		return nil
+	}
+	for _, name := range ownedOutputPaths {
+		if err := os.RemoveAll(filepath.Join(outDir, name)); err != nil {
+			return fmt.Errorf("clean %s: %w", filepath.Join(outDir, name), err)
+		}
+	}
+	return nil
 }
 
 // exampleBadges are the three plates the landing page shows as specimens.
