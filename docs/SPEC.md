@@ -45,7 +45,7 @@ docs/SPEC.md                   this file
 | e/`<id>`/index.html | one entry |
 | badge/`<id>`.svg | the badge for one entry |
 | badge/example-green.svg, badge/example-amber.svg, badge/example-red.svg | the three specimens the landing page shows |
-| api/entries.json | `{"entries":[...]}`, same order as the wall |
+| api/entries.json | `{"built_at":"...","entries":[...]}`, same order as the wall |
 | 404.html | GitHub Pages serves this for an unknown path |
 | static/ | the stylesheet and the self hosted fonts, copied from web/static |
 | CNAME | `itworks.build` |
@@ -118,11 +118,15 @@ scripts and emoji are all legal.
 ## api/entries.json
 
 ```json
-{"entries":[{"id":"...","name":"...","summary":"...","source":"...","repo_url":"...",
+{"built_at":"2026-01-31T05:17:00Z",
+ "entries":[{"id":"...","name":"...","summary":"...","source":"...","repo_url":"...",
  "audit_tier":"...","audit_date":"YYYY-MM-DD","found":0,"fixed":0,"accepted":0,
  "critical_open":0,"critical_accepted":0,"age_days":0,"badge_color":"green",
  "badge_url":"https://itworks.build/badge/<id>.svg","entry_url":"https://itworks.build/e/<id>/"}]}
 ```
+
+`built_at` is the build time, RFC 3339 in UTC to the second; it is not the
+`-today` reference date.
 
 `badge_url` and `entry_url` are absolute because they are quoted away from
 the site. Every link inside a page is root relative, so a local preview

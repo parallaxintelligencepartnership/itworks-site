@@ -32,6 +32,10 @@ func Load(dir string, now time.Time, warn io.Writer) ([]Entry, []error) {
 		warn = os.Stderr
 	}
 
+	if err := checkNotShallow(dir); err != nil {
+		return nil, []error{err}
+	}
+
 	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, []error{fmt.Errorf("read %s: %w", dir, err)}
@@ -104,7 +108,12 @@ func Load(dir string, now time.Time, warn io.Writer) ([]Entry, []error) {
 		}
 
 		e.ID = id
-		e.ApprovedAt = approvedAt(dir, path, warn)
+		approved, err := approvedAt(dir, path, warn)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		e.ApprovedAt = approved
 		entries = append(entries, e)
 	}
 
@@ -114,12 +123,40 @@ func Load(dir string, now time.Time, warn io.Writer) ([]Entry, []error) {
 	return entries, nil
 }
 
+// checkNotShallow refuses a shallow checkout of dir before any entry is
+// read. A shallow clone (GitHub Actions' default fetch-depth: 1, say) does
+// not merely lack history: git treats its boundary commit as a root commit,
+// so `git log --diff-filter=A` reports every file present there as freshly
+// added on that commit's date. That is not an absence approvedAt's mtime
+// fallback can catch — it is a wrong-but-present date — so it has to be
+// caught up front, once, rather than per entry. If git is not installed or
+// dir is not a repository, this is not the shallow case and Load proceeds
+// as before.
+func checkNotShallow(dir string) error {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return nil
+	}
+	out, err := exec.Command(git, "-C", dir, "rev-parse", "--is-shallow-repository").Output()
+	if err != nil {
+		return nil
+	}
+	if strings.TrimSpace(string(out)) == "true" {
+		return fmt.Errorf("entries checkout is shallow, so approval dates would be wrong; fetch full history (fetch-depth: 0)")
+	}
+	return nil
+}
+
 // approvedAt returns the commit date of the commit that added path, which
 // is the moment the pull request was merged and the entry was approved. If
-// git is not installed, the directory is not a repository, or the file was
-// never committed, it falls back to the file's modification time and says
-// so on warn.
-func approvedAt(dir, path string, warn io.Writer) time.Time {
+// git is not installed, the directory is not a repository, or the file is
+// untracked (a local preview of an entry not yet committed), it falls back
+// to the file's modification time and says so on warn. If the file is
+// tracked but no adding commit can be found — a shallow checkout whose
+// history does not reach back to it — that is not a local preview, so it
+// is reported as an error instead of silently backdating the entry to
+// whatever moment the checkout happened to write the file.
+func approvedAt(dir, path string, warn io.Writer) (time.Time, error) {
 	fallback := func(reason string) time.Time {
 		mtime := time.Time{}
 		if fi, err := os.Stat(path); err == nil {
@@ -132,7 +169,7 @@ func approvedAt(dir, path string, warn io.Writer) time.Time {
 
 	git, err := exec.LookPath("git")
 	if err != nil {
-		return fallback("git is not installed")
+		return fallback("git is not installed"), nil
 	}
 
 	abs, err := filepath.Abs(path)
@@ -142,15 +179,21 @@ func approvedAt(dir, path string, warn io.Writer) time.Time {
 	cmd := exec.Command(git, "-C", dir, "log", "--diff-filter=A", "--format=%cI", "-1", "--", abs)
 	out, err := cmd.Output()
 	if err != nil {
-		return fallback("git could not read the history of this file")
+		return fallback("git could not read the history of this file"), nil
 	}
 	line := strings.TrimSpace(string(out))
 	if line == "" {
-		return fallback("the file has no commit that adds it, so it is not merged yet")
+		tracked := exec.Command(git, "-C", dir, "ls-files", "--error-unmatch", "--", abs)
+		if trackErr := tracked.Run(); trackErr == nil {
+			return time.Time{}, fmt.Errorf(
+				"%s: this file is tracked by git but the checkout has no history for it (a shallow checkout?); the approval date cannot be determined",
+				filepath.Base(path))
+		}
+		return fallback("the file has no commit that adds it, so it is not merged yet"), nil
 	}
 	t, err := time.Parse(time.RFC3339, line)
 	if err != nil {
-		return fallback("git returned a commit date that could not be parsed")
+		return fallback("git returned a commit date that could not be parsed"), nil
 	}
-	return t.UTC()
+	return t.UTC(), nil
 }

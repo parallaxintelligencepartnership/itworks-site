@@ -96,3 +96,16 @@ Repository settings to flip, under Settings then Pages:
 The site rebuilds on every push to `main`, every day at 05:17 UTC, and on
 demand from the Actions tab. The daily build is what turns a badge amber on
 the thirtieth day after its audit.
+
+## Rolling back
+
+1. Find the last good commit on `main`: `git log --oneline main`.
+2. `git revert <bad-sha>` (or `git revert -m 1 <merge-sha>` for a squash
+   merge that is a single commit, plain revert works).
+3. Push `main`.
+4. The pages workflow redeploys automatically, or dispatch it from the
+   Actions tab.
+5. Confirm with `curl -sI https://itworks.build/ | head -1` and the site's
+   `api/entries.json` `built_at`.
+
+Ship tags are named `ship-YYYY-MM-DD` and mark the last known-good state.

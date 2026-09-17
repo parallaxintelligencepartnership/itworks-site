@@ -107,6 +107,20 @@ func glyph(color string, cx float64) string {
 // display, criticalOpen the open critical count, and color one of "green",
 // "amber", "red" (the state plate fill).
 func Render(date string, criticalOpen int, color string) []byte {
+	return render(date, criticalOpen, color, false)
+}
+
+// RenderExample returns the same Ledger style SVG badge as Render, but
+// marked as a specimen: the right-hand text is prefixed by "example · " and
+// the title by "Example: ", so the three plates the landing page shows when
+// the wall is empty never read as a real entry's badge.
+func RenderExample(date string, criticalOpen int, color string) []byte {
+	return render(date, criticalOpen, color, true)
+}
+
+// render is the shared body of Render and RenderExample, so the two never
+// drift apart.
+func render(date string, criticalOpen int, color string, example bool) []byte {
 	var rightText, title string
 	if color == ColorAmber {
 		rightText = fmt.Sprintf("%s · %d critical · stale", date, criticalOpen)
@@ -114,6 +128,10 @@ func Render(date string, criticalOpen int, color string) []byte {
 	} else {
 		rightText = fmt.Sprintf("%s · %d critical", date, criticalOpen)
 		title = fmt.Sprintf("Audit %s, %d critical, %s", date, criticalOpen, color)
+	}
+	if example {
+		rightText = "example · " + rightText
+		title = "Example: " + title
 	}
 	stateHex := hexFor(color)
 	rightTextHex := textHexFor(color)

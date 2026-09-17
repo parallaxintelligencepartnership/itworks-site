@@ -185,3 +185,55 @@ func TestLoadUsesTheAddingCommitDate(t *testing.T) {
 		t.Fatalf("unexpected warning: %s", warn.String())
 	}
 }
+
+func TestLoadRejectsAShallowCheckout(t *testing.T) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("git is not installed")
+	}
+
+	origin := t.TempDir()
+	run := func(dir string, args ...string) {
+		t.Helper()
+		cmd := exec.Command(git, args...)
+		cmd.Dir = dir
+		cmd.Env = append(os.Environ(),
+			"GIT_AUTHOR_NAME=test", "GIT_AUTHOR_EMAIL=test@example.com",
+			"GIT_COMMITTER_NAME=test", "GIT_COMMITTER_EMAIL=test@example.com",
+			"GIT_COMMITTER_DATE=2026-03-04T05:06:07Z", "GIT_AUTHOR_DATE=2026-03-04T05:06:07Z",
+		)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v: %s", args, err, out)
+		}
+	}
+	run(origin, "init", "-q")
+	entriesDir := filepath.Join(origin, "entries")
+	if err := os.Mkdir(entriesDir, 0o755); err != nil {
+		t.Fatalf("mkdir entries: %v", err)
+	}
+	writeEntry(t, entriesDir, "mspsentinel2.json", sampleJSON)
+	run(origin, "add", "entries/mspsentinel2.json")
+	run(origin, "commit", "-q", "-m", "add an entry")
+
+	clone := t.TempDir()
+	cloneDir := filepath.Join(clone, "repo")
+	cloneCmd := exec.Command(git, "clone", "-q", "--depth", "1", "file://"+origin, cloneDir)
+	if out, err := cloneCmd.CombinedOutput(); err != nil {
+		t.Fatalf("git clone --depth 1: %v: %s", err, out)
+	}
+
+	var warn bytes.Buffer
+	_, errs := Load(filepath.Join(cloneDir, "entries"), testNow, &warn)
+	if len(errs) == 0 {
+		t.Fatalf("Load did not reject the shallow checkout")
+	}
+	found := false
+	for _, e := range errs {
+		if strings.Contains(e.Error(), "shallow") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("Load errors do not mention a shallow checkout: %v", errs)
+	}
+}

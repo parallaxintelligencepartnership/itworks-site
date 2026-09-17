@@ -150,6 +150,14 @@ func TestBuildRemovesEntriesDeletedFromTheSource(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(out, "index.html")); err != nil {
 		t.Fatalf("index.html missing after rebuild: %v", err)
 	}
+
+	wall := readFile(t, out, "wall", "index.html")
+	if strings.Contains(wall, "MSP Sentinel") {
+		t.Fatalf("wall still names the removed entry:\n%s", wall)
+	}
+	if strings.Contains(wall, "/e/"+fixtureID+"/") {
+		t.Fatalf("wall still links the removed entry's page:\n%s", wall)
+	}
 }
 
 func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
@@ -157,6 +165,7 @@ func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
 	mustRun(t, entriesDirWithFixture(t), out, buildToday, false)
 
 	var feed struct {
+		BuiltAt string            `json:"built_at"`
 		Entries []json.RawMessage `json:"entries"`
 	}
 	if err := json.Unmarshal([]byte(readFile(t, out, "api", "entries.json")), &feed); err != nil {
@@ -164,6 +173,13 @@ func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
 	}
 	if len(feed.Entries) != 1 {
 		t.Fatalf("entries = %d, want 1", len(feed.Entries))
+	}
+	builtAt, err := time.Parse(time.RFC3339, feed.BuiltAt)
+	if err != nil {
+		t.Fatalf("built_at = %q does not parse as RFC 3339: %v", feed.BuiltAt, err)
+	}
+	if d := time.Since(builtAt); d < 0 || d > 5*time.Minute {
+		t.Fatalf("built_at = %s is not within 5 minutes of now", feed.BuiltAt)
 	}
 
 	now := time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)
@@ -210,6 +226,74 @@ func TestBuildWithNoEntriesShowsTheExampleBadge(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(out, "badge", name)); err != nil {
 			t.Fatalf("missing %s: %v", name, err)
 		}
+	}
+}
+
+// TestRenderEscapesHostileName is the B4 fix: a name that is itself markup
+// is legal input (it is printable text under the 60 character limit), and
+// html/template must escape it everywhere it lands in a page, while the
+// JSON feed must round trip it unchanged.
+func TestRenderEscapesHostileName(t *testing.T) {
+	const hostileID = "hostilenameq"
+	const hostileName = "<script>alert(1)</script>"
+
+	rec := map[string]any{
+		"name":              hostileName,
+		"summary":           "a name that is itself markup",
+		"source":            "closed",
+		"repo_url":          "",
+		"audit_tier":        "audit",
+		"audit_date":        "2026-09-07",
+		"found":             1,
+		"fixed":             1,
+		"accepted":          0,
+		"critical_open":     0,
+		"critical_accepted": 0,
+	}
+	body, err := json.Marshal(rec)
+	if err != nil {
+		t.Fatalf("marshal fixture: %v", err)
+	}
+
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, hostileID+".json"), body, 0o644); err != nil {
+		t.Fatalf("write the entry: %v", err)
+	}
+
+	out := t.TempDir()
+	mustRun(t, dir, out, buildToday, false)
+
+	for _, page := range [][]string{
+		{out, "index.html"},
+		{out, "wall", "index.html"},
+		{out, "e", hostileID, "index.html"},
+	} {
+		html := readFile(t, page...)
+		if !strings.Contains(html, "&lt;script&gt;") {
+			t.Fatalf("%v does not escape the hostile name", page)
+		}
+		if strings.Contains(html, "<script>alert") {
+			t.Fatalf("%v renders the hostile name unescaped", page)
+		}
+	}
+
+	feed := readFile(t, out, "api", "entries.json")
+	if !strings.Contains(feed, "<script>") && !strings.Contains(feed, "\\u003cscript\\u003e") {
+		t.Fatalf("entries.json neither carries a raw <script> nor the encoding/json escaped form:\n%s", feed)
+	}
+	var decoded struct {
+		Entries []struct {
+			Name string `json:"name"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal([]byte(feed), &decoded); err != nil {
+		t.Fatalf("entries.json does not parse: %v", err)
+	}
+	if len(decoded.Entries) != 1 {
+		t.Fatalf("entries = %d, want 1", len(decoded.Entries))
+	}
+	if decoded.Entries[0].Name != hostileName {
+		t.Fatalf("name = %q, want %q (round trip through JSON must not alter it)", decoded.Entries[0].Name, hostileName)
 	}
 }
 

@@ -29,9 +29,9 @@ internet - exposure notes: https://itworks.build on GitHub Pages (HTTPS enforced
 
 ## Definition of done
 1. go test ./..., go vet ./..., govulncheck all clean.
-2. Local run: seed entry POSTed, approved, visible on the wall; badge green; amber when audit date is 40 days back; red when one critical is open.
+2. Local build: an entry file under entries/ renders on the wall and its entry page; badge green; amber when the audit date is 40 days back; red when one critical is open; deleting the file removes both on rebuild.
 3. Plugin closeout asks the opt in publish question; publish.md lists exactly what is and is not sent; lint and the closeout harness case pass.
-4. Dockerfile, compose, Traefik labels, deploy.sh, and runbook staged; nothing touches pi3 until Matt says go.
+4. pages.yml builds from main on push and daily and deploys to GitHub Pages at itworks.build; check.yml validates every pull request; DNS and Pages settings are written in README.md.
 5. vibecheck lint clean on this repo; /vibecheck:checkpoint run before the report.
 
 ## Verification expectations

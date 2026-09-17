@@ -190,6 +190,21 @@ func TestAmberWiderThanGreenForSameDateAndCount(t *testing.T) {
 	}
 }
 
+func TestRenderExampleMarksTheSpecimenPlate(t *testing.T) {
+	svg := string(Render("2026-01-01", 0, ColorGreen))
+	if strings.Contains(svg, "example · ") {
+		t.Fatalf("Render must not mark a real badge as an example: %s", svg)
+	}
+
+	example := string(RenderExample("2026-01-01", 0, ColorGreen))
+	if !strings.Contains(example, "example · ") {
+		t.Fatalf("RenderExample does not prefix the right-hand text: %s", example)
+	}
+	if !strings.Contains(example, "Example: ") {
+		t.Fatalf("RenderExample does not prefix the title: %s", example)
+	}
+}
+
 // extractSVGWidth pulls the width="N" attribute value from the outer <svg> tag.
 func extractSVGWidth(t *testing.T, svg string) int {
 	t.Helper()

@@ -155,7 +155,10 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		return err
 	}
 
-	feed, err := json.MarshalIndent(map[string]any{"entries": views}, "", "  ")
+	feed, err := json.MarshalIndent(map[string]any{
+		"built_at": time.Now().UTC().Format(time.RFC3339),
+		"entries":  views,
+	}, "", "  ")
 	if err != nil {
 		return fmt.Errorf("render the entries feed: %w", err)
 	}
@@ -215,7 +218,7 @@ var exampleBadges = []struct {
 func writeExampleBadges(outDir string, today time.Time) error {
 	for _, b := range exampleBadges {
 		date := today.AddDate(0, 0, -b.ageDays).Format("2006-01-02")
-		if err := writeFile(outDir, filepath.Join("badge", b.name), badge.Render(date, b.crit, b.color)); err != nil {
+		if err := writeFile(outDir, filepath.Join("badge", b.name), badge.RenderExample(date, b.crit, b.color)); err != nil {
 			return err
 		}
 	}
