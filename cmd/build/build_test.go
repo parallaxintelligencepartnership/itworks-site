@@ -64,6 +64,7 @@ func TestBuildRendersEverySiteFile(t *testing.T) {
 		filepath.Join("api", "entries.json"),
 		"404.html",
 		filepath.Join("static", "site.css"),
+		filepath.Join("static", "embed.js"),
 		filepath.Join("static", "favicon.svg"),
 		filepath.Join("static", "favicon-32.png"),
 		filepath.Join("static", "apple-touch-icon.png"),

@@ -69,6 +69,29 @@ Two more flags help when you are working on the badge: `-today 2026-01-31`
 renders against a fixed date, so you can see the amber plate without waiting
 30 days, and `-entries <dir>` reads the entry files from somewhere else.
 
+## Embedding the wall on another site
+
+GitHub Pages serves every file with `access-control-allow-origin: *`, so
+`api/entries.json` is a plain, open-CORS JSON document at
+`https://itworks.build/api/entries.json`
+(see [docs/SPEC.md](docs/SPEC.md#apientriesjson) for its shape: `id`, `name`,
+`summary`, `source`, `repo_url`, `audit_tier`, `audit_date`, `found`,
+`fixed`, `accepted`, `critical_open`, `critical_accepted`, `age_days`,
+`badge_color`, `badge_url`, `entry_url`, plus the feed-level `built_at`). A
+build-time fetch of that URL works from any other Parallax site.
+
+For a plain drop-in, add these two lines to a page:
+
+```html
+<div data-itworks-wall data-limit="5"></div>
+<script src="https://itworks.build/static/embed.js" defer></script>
+```
+
+`static/embed.js` fetches the feed, takes the newest `data-limit` entries
+(default 5), and renders each as a name, summary, audit tier and date, and
+badge, all linking back to itworks.build. It has no dependencies and
+inherits the host page's fonts and colours.
+
 ## Pointing itworks.build at GitHub Pages
 
 DNS records at the registrar for `itworks.build`:

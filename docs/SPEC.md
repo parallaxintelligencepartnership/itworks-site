@@ -132,6 +132,11 @@ scripts and emoji are all legal.
 the site. Every link inside a page is root relative, so a local preview
 works.
 
+`static/embed.js` renders this feed on another site. It reads two optional
+attributes off each `[data-itworks-wall]` element: `data-feed` (default this
+feed's URL) and `data-limit` (default 5, the number of newest entries to
+show).
+
 ## Badge rules (internal/badge)
 
 The critical count the badge reads is `critical_open + critical_accepted`. A
