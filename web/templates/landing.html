@@ -2,7 +2,7 @@
 <main id="main">
 
 <header class="mast bleed snap">
-<h1 class="wordmark">itworks<span class="dot">.</span>dev</h1>
+<h1 class="wordmark">itworks<span class="dot">.</span>build</h1>
 <p class="tag">Anyone can say it works. This wall prints the receipt.</p>
 {{if .Entries}}
 <a class="mast-badge b" href="{{(index .Entries 0).EntryPath}}"><img class="badge" src="{{(index .Entries 0).BadgePath}}" alt="Audit badge for {{(index .Entries 0).Name}}: {{(index .Entries 0).BadgeColor}}, {{(index .Entries 0).AuditDate}}, {{(index .Entries 0).CriticalOpen}} critical open, {{(index .Entries 0).CriticalAccepted}} critical accepted by the owner"></a>
