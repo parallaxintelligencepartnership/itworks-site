@@ -338,6 +338,9 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span> <span class="crit-accepted">(1 accepted)</span>`) {
 		t.Fatalf("wall critical cell does not count the accepted critical:\n%s", row)
 	}
+	if strings.Contains(row, "crit-zero") {
+		t.Fatalf("wall critical cell styles an accepted critical as zero:\n%s", row)
+	}
 
 	j := strings.Index(wall, "/e/cleanentry01/")
 	if j < 0 {
@@ -353,5 +356,8 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	}
 	if strings.Contains(rowJ, "crit-accepted") {
 		t.Fatalf("wall critical cell should not mention accepted for a clean entry:\n%s", rowJ)
+	}
+	if !strings.Contains(rowJ, "crit-zero") {
+		t.Fatalf("wall critical cell does not style a clean entry as zero:\n%s", rowJ)
 	}
 }

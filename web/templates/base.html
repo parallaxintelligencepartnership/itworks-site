@@ -44,7 +44,7 @@
 <p class="n"><span class="k">found</span><span class="v num">{{.Found}}</span></p>
 <p class="n"><span class="k">fixed</span><span class="v num">{{.Fixed}}</span></p>
 <p class="n"><span class="k">accepted</span><span class="v num">{{.Accepted}}</span></p>
-<p class="n {{if .CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalTotal}}</span>{{if .CriticalAccepted}} <span class="crit-accepted">({{.CriticalAccepted}} accepted)</span>{{end}}</p>
+<p class="n {{if .CriticalTotal}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalTotal}}</span>{{if .CriticalAccepted}} <span class="crit-accepted">({{.CriticalAccepted}} accepted)</span>{{end}}</p>
 </div>
 <div class="badgecell">
 <img class="badge" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open, {{.CriticalAccepted}} critical accepted by the owner">
