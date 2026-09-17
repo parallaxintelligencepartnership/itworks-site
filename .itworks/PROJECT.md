@@ -4,7 +4,7 @@
 A wall of apps that were built with the itworks plugin and finished through its closeout, plus a README badge per app showing the audit date and open critical count. Precisely: a single Go binary serving a public HTML wall, a JSON submit endpoint, SVG badges, and an admin approval page, backed by one SQLite file. The site makes no model calls, ever.
 
 ## Who uses it
-the public - auth needed: yes, for the admin approval route only (Authentik forward-auth at Traefik); roles needed: yes: visitor (read wall, badges, entry pages), publisher (unauthenticated POST from a vibecheck closeout, entry hidden until approved), admin (Matt, approve or hide entries)
+the public - auth needed: no; the only write path is a GitHub pull request, so GitHub's own login covers it; roles needed: yes: visitor (read wall, badges, entry pages), submitter (opens a pull request adding one entries/<id>.json), maintainer (Matt, merges to approve, deletes the file to hide)
 
 ## Terminology map
 | Your words | Real term |
@@ -16,16 +16,16 @@ the public - auth needed: yes, for the admin approval route only (Authentik forw
 | "stale" | audit date 30 or more days old (amber badge) |
 
 ## Stack
-Go 1.26, standard library HTTP and html/template, static assets via embed
-modernc.org/sqlite (pure Go, pinned exact), one SQLite file on a Docker volume
+Go 1.26 standard library only (html/template, embed, encoding/json); no external modules, no go.sum
+Static build: cmd/build renders dist/ from entries/*.json; GitHub Actions deploys it to GitHub Pages
 No Node build step, no accounts, no email, no LLM calls
-Hosting target: pi3 (x86_64), docker compose under /opt/itworks, Traefik letsencrypt route, admin route behind authentik-auth forward-auth
+Hosting target: GitHub Pages, custom domain itworks.build; the Gitea remote is the mirror
 
 ## Data
-Real data: other people's closeout summaries (display name, one line, source label, optional repo URL, tier, date, four counts) | Sample data: fixtures/seed-msp-sentinel.json, POSTed by scripts/seed.sh | Sensitive: no by design; the payload never carries code, paths, secrets, or environment, and no IP addresses are stored
+Real data: other people's closeout summaries (display name, one line, source label, optional repo URL, tier, date, counts) as one JSON file each under entries/, in git | Sample data: fixtures/seed-msp-sentinel.json, copied into entries/ by hand for a local build | Sensitive: no by design; the payload never carries code, paths, secrets, or environment, and nothing about the submitter beyond their GitHub identity on the pull request
 
 ## Where it will live
-internet - exposure notes: https://itworks.build via Traefik only, no host port published, /admin behind Authentik forward-auth; deploy and domain purchase deferred by Matt on 2026-09-11 - paid services: none
+internet - exposure notes: https://itworks.build on GitHub Pages (HTTPS enforced there), built by .github/workflows/pages.yml from main on push and daily; no server of ours, nothing listening on the estate - paid services: none (domain itworks.build, about 25 USD a year, bought 2026-09-17)
 
 ## Definition of done
 1. go test ./..., go vet ./..., govulncheck all clean.
