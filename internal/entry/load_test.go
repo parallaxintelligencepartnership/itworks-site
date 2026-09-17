@@ -62,6 +62,27 @@ func TestLoadReadsValidatesAndNamesEntries(t *testing.T) {
 	}
 }
 
+func TestLoadWarnsAndSkipsSubdirectoriesAndNonJSONFiles(t *testing.T) {
+	dir := t.TempDir()
+	writeEntry(t, dir, "mspsentinel2.json", sampleJSON)
+	if err := os.Mkdir(filepath.Join(dir, "sub"), 0o755); err != nil {
+		t.Fatalf("mkdir sub: %v", err)
+	}
+	writeEntry(t, filepath.Join(dir, "sub"), "iiiiiiiiiiii.json", sampleJSON)
+
+	var warn bytes.Buffer
+	entries, errs := Load(dir, testNow, &warn)
+	if len(errs) != 0 {
+		t.Fatalf("Load errors: %v", errs)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("entries = %d, want 1 (subdirectory must not be read)", len(entries))
+	}
+	if !strings.Contains(warn.String(), "sub") {
+		t.Fatalf("expected a warning naming the skipped subdirectory, got %q", warn.String())
+	}
+}
+
 func TestLoadRejectsBadFileNamesAndReportsEveryError(t *testing.T) {
 	dir := t.TempDir()
 	// The file names differ in more than case: a macOS temp directory is
@@ -109,12 +130,19 @@ func TestLoadUsesTheAddingCommitDate(t *testing.T) {
 		}
 	}
 	run("init", "-q")
-	writeEntry(t, dir, "mspsentinel2.json", sampleJSON)
-	run("add", "mspsentinel2.json")
+	// entries/ is a subdirectory of the git repository, the same layout as
+	// production, so the repository's own .git directory never sits inside
+	// the directory Load reads.
+	entriesDir := filepath.Join(dir, "entries")
+	if err := os.Mkdir(entriesDir, 0o755); err != nil {
+		t.Fatalf("mkdir entries: %v", err)
+	}
+	writeEntry(t, entriesDir, "mspsentinel2.json", sampleJSON)
+	run("add", "entries/mspsentinel2.json")
 	run("commit", "-q", "-m", "add an entry")
 
 	var warn bytes.Buffer
-	entries, errs := Load(dir, testNow, &warn)
+	entries, errs := Load(entriesDir, testNow, &warn)
 	if len(errs) != 0 {
 		t.Fatalf("Load errors: %v", errs)
 	}

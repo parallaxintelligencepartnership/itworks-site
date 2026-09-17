@@ -47,6 +47,22 @@ jobs:
             fail=1
           fi
 
+          if [ -n "$added" ]; then
+            while IFS= read -r path; do
+              [ -n "$path" ] || continue
+              if ! printf '%s' "$path" | grep -qE '^entries/[a-z2-7]{12}\.json$'; then
+                echo "Added path is not a top level entries/<id>.json file: $path"
+                fail=1
+                continue
+              fi
+              mode=$(git ls-files -s -- "$path" | awk '{print $1}')
+              if [ "$mode" != "100644" ]; then
+                echo "Added path $path has mode $mode, not a regular file (100644):"
+                fail=1
+              fi
+            done <<< "$added"
+          fi
+
           touched=$(git diff --name-status "$RANGE" | awk '$1 !~ /^A/ { print $2 }')
           if [ -n "$touched" ]; then
             echo "This pull request changes or removes entries that are already on the wall:"

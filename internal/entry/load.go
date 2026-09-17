@@ -32,9 +32,31 @@ func Load(dir string, now time.Time, warn io.Writer) ([]Entry, []error) {
 		warn = os.Stderr
 	}
 
-	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, []error{fmt.Errorf("read %s: %w", dir, err)}
+	}
+
+	var paths []string
+	for _, de := range dirEntries {
+		name := de.Name()
+		if de.IsDir() {
+			fmt.Fprintf(warn, "warning: %s: subdirectory under entries/ is ignored\n", name)
+			continue
+		}
+		if !strings.HasSuffix(name, ".json") {
+			fmt.Fprintf(warn, "warning: %s: non-json file under entries/ is ignored\n", name)
+			continue
+		}
+		if de.Type()&os.ModeSymlink != 0 {
+			fmt.Fprintf(warn, "warning: %s: symlink under entries/ is ignored\n", name)
+			continue
+		}
+		if !de.Type().IsRegular() {
+			fmt.Fprintf(warn, "warning: %s: non-regular file under entries/ is ignored\n", name)
+			continue
+		}
+		paths = append(paths, filepath.Join(dir, name))
 	}
 	sort.Strings(paths)
 
