@@ -28,11 +28,7 @@ Rehearsal performed: a clean worktree at `ship-2026-09-17` was checked out, `go 
 ## Known limitations and accepted risks
 Accepted risks: none. Open findings carried into this ship, all tracked in .itworks/REVIEWS.md:
 - OUTSTANDING (IMPORTANT): nothing reports a daily rebuild that stops. GitHub disables a schedule after 60 days without a commit, and a quiet wall is exactly that; badges would sit on green past day 30. Matt's decision on 2026-09-17: "the probe is needed". The fix is an n8n GitOps workflow on the estate that fetches `api/entries.json` daily and sends a Telegram alert when `built_at` is over 48 hours old or the fetch fails. It is built right after this deploy, once the live URL exists.
-- OUTSTANDING (IMPORTANT, closes at deploy): the repo exists only on this laptop and the Gitea mirror; the GitHub repo is created in the deploy step.
-- OUTSTANDING (IMPORTANT, closes at deploy): squash-only merges are a repo setting, set when the repo is created.
-- OUTSTANDING (IMPORTANT, closes at deploy): http to https redirect is the Enforce HTTPS setting, on once the certificate issues.
-- OUTSTANDING (ADVISORY, closes at deploy): branch protection on main requiring the `check` job, so the entries-only policy is a gate rather than advice.
-- OUTSTANDING (ADVISORY, closes at deploy): the store's offsite copy is the GitHub remote itself.
+- OUTSTANDING (IMPORTANT): http to https redirect is the Pages Enforce HTTPS setting; it can go on only after the DNS records at Spaceship resolve and GitHub issues the certificate.
 Limitations by design: a pending entry has no page and no badge until its pull request is merged; the badge is only as fresh as the last daily build; the site makes no model calls and stores nothing about a submitter beyond what the pull request carries.
 
 ## What breaks first and how you'd know
@@ -47,4 +43,4 @@ The daily rebuild stops (schedule disabled, workflow broken, or Pages outage). S
 - Project state: `.itworks/` (PROJECT, DECISIONS, REVIEWS, MAP, PROFILE); audits under `docs/audit/`.
 
 ## Ship history
-- 2026-09-17: first ship
+- 2026-09-17: first ship; GitHub repo created, pages workflow run 35284262592 deployed, custom domain set, DNS pending at the registrar
