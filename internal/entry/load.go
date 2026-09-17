@@ -74,11 +74,16 @@ func Load(dir string, now time.Time, warn io.Writer) ([]Entry, []error) {
 			errs = append(errs, fmt.Errorf("%s: file name must be 12 characters from a to z and 2 to 7, plus .json", base))
 			continue
 		}
-		if first, dup := seen[id]; dup {
+		// The id is compared case-insensitively: two files whose stems
+		// differ only in case are the same file on a case-insensitive
+		// filesystem (macOS, Windows), and would collide if ever moved to
+		// a case-sensitive one, so they collide here too.
+		key := strings.ToLower(id)
+		if first, dup := seen[key]; dup {
 			errs = append(errs, fmt.Errorf("%s: duplicate entry id, already used by %s", base, first))
 			continue
 		}
-		seen[id] = base
+		seen[key] = base
 
 		f, err := os.Open(path)
 		if err != nil {

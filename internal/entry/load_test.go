@@ -98,6 +98,37 @@ func TestLoadRejectsBadFileNamesAndReportsEveryError(t *testing.T) {
 	}
 }
 
+// TestLoadRejectsCaseInsensitiveDuplicateStems covers the case-insensitive
+// collision check: two files whose stems differ only in case. This can
+// only be constructed as two distinct files on a case-sensitive
+// filesystem; on a case-insensitive one (the common case on macOS) the
+// second write overwrites the first, and there is nothing to collide, so
+// the test skips itself.
+func TestLoadRejectsCaseInsensitiveDuplicateStems(t *testing.T) {
+	dir := t.TempDir()
+	lower := writeEntry(t, dir, "abcdefghijkl.json", sampleJSON)
+	upper := writeEntry(t, dir, "ABCDEFGHIJKL.json", sampleJSON)
+
+	if _, err := os.Lstat(lower); err != nil {
+		t.Fatalf("lstat %s: %v", lower, err)
+	}
+	if _, err := os.Lstat(upper); err != nil {
+		t.Fatalf("lstat %s: %v", upper, err)
+	}
+	des, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("read dir: %v", err)
+	}
+	if len(des) < 2 {
+		t.Skip("filesystem is case insensitive; the two names collapsed into one file")
+	}
+
+	_, errs := Load(dir, testNow, &bytes.Buffer{})
+	if len(errs) == 0 {
+		t.Fatalf("expected an error for case-insensitive duplicate stems, got none")
+	}
+}
+
 func TestLoadRejectsAnIDInsideTheJSON(t *testing.T) {
 	dir := t.TempDir()
 	body := strings.Replace(sampleJSON, `{`, `{"id":"mspsentinel2",`, 1)
