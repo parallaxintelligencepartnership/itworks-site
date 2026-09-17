@@ -118,10 +118,10 @@ func Validate(rec Record, now time.Time) (Entry, string) {
 		return e, "source must be public or closed"
 	}
 
-	repoURL := ""
-	if rec.RepoURL != nil {
-		repoURL = *rec.RepoURL
+	if rec.RepoURL == nil {
+		return e, `repo_url is required; use "" when source is closed`
 	}
+	repoURL := *rec.RepoURL
 	if repoURL != "" {
 		if source == "closed" {
 			return e, "repo url must be empty when source is closed"

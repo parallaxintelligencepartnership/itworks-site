@@ -13,7 +13,7 @@ func intp(i int) *int       { return &i }
 func validRecord() Record {
 	return Record{
 		Name: strp("MSP Sentinel"), Summary: strp("did the closeout"),
-		Source: strp("public"), AuditTier: strp("audit"), AuditDate: strp("2026-01-01"),
+		Source: strp("public"), RepoURL: strp(""), AuditTier: strp("audit"), AuditDate: strp("2026-01-01"),
 		Found: intp(10), Fixed: intp(10), Accepted: intp(0),
 		CriticalOpen: intp(0), CriticalAccepted: intp(0),
 	}
@@ -37,6 +37,7 @@ func TestValidateTable(t *testing.T) {
 		{"summary too long", func(r Record) Record { r.Summary = strp(strings.Repeat("a", 161)); return r }, true},
 		{"missing source", func(r Record) Record { r.Source = nil; return r }, true},
 		{"bad source value", func(r Record) Record { r.Source = strp("private"); return r }, true},
+		{"missing repo url", func(r Record) Record { r.RepoURL = nil; return r }, true},
 		{"repo url no host", func(r Record) Record { r.RepoURL = strp("https://"); return r }, true},
 		{"repo url too long", func(r Record) Record {
 			r.RepoURL = strp("https://example.com/" + strings.Repeat("a", 200))
