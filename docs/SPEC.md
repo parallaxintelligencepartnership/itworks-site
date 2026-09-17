@@ -140,7 +140,7 @@ Boundary: 29 days is green, 30 days is amber. Red wins over amber.
 
 Colors (all pass WCAG AA at 11 px): green plate `#1a7f37` with white text,
 amber plate `#d29922` with ink text `#1f1f1f`, red plate `#b3261e` with white
-text, label background `#24292f` with white text. The old `#3fb950` and
+text, label background `#1f1f1f` with white text. The old `#3fb950` and
 `#f85149` plates failed AA with white text and must not return.
 
 `Render` returns the Ledger badge (design source:
