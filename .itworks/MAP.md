@@ -28,7 +28,7 @@ One package: `go test ./internal/badge -run TestName`
 - Custom domain itworks.build; the build writes CNAME into the artifact, and Enforce HTTPS goes on once the certificate issues.
 - The site rebuilds on every push to main, daily at 05:17 UTC (cron 17 5 * * *), and on demand; the daily build is what turns a badge amber on day 30.
 - There is no host, no container and no database; the whole site is files in the artifact.
-- As of 2026-09-16 the domain is not bought and nothing is published; the site has only been built locally.
+- Domain itworks.build bought 2026-09-17 (Spaceship, standard price). The GitHub remote is created at the first ship; Gitea (origin) stays the mirror.
 
 ## Gotchas
 - 2026-09-11 | "pi" in pi1/pi2/pi3 means Parallax Intelligence, not Raspberry Pi; base images must be amd64 | run `uname -m` on the host before pinning any image
