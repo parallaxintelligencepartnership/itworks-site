@@ -4,6 +4,7 @@ package badge
 
 import (
 	"fmt"
+	"html"
 	"math"
 	"time"
 	"unicode/utf8"
@@ -121,6 +122,9 @@ func RenderExample(date string, criticalOpen int, color string) []byte {
 // render is the shared body of Render and RenderExample, so the two never
 // drift apart.
 func render(date string, criticalOpen int, color string, example bool) []byte {
+	// The date is validated upstream, but the SVG is text that leaves the
+	// site, so it is escaped here as well and no caller can ever change that.
+	date = html.EscapeString(date)
 	var rightText, title string
 	if color == ColorAmber {
 		rightText = fmt.Sprintf("%s · %d critical · stale", date, criticalOpen)

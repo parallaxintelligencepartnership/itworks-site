@@ -224,3 +224,13 @@ func extractSVGWidth(t *testing.T, svg string) int {
 	}
 	return width
 }
+
+func TestRenderEscapesTheDate(t *testing.T) {
+	got := string(Render(`2026-09-17"><script>x</script>`, 0, ColorGreen))
+	if strings.Contains(got, "<script>") {
+		t.Fatalf("hostile date reached the SVG unescaped:\n%s", got)
+	}
+	if !strings.Contains(got, "&lt;script&gt;") {
+		t.Fatalf("expected the escaped date in the SVG")
+	}
+}
