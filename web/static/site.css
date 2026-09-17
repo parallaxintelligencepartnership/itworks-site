@@ -792,11 +792,6 @@ img.badge{
     .mast > *, .sheet-head > *{ opacity: 0; transform: translate3d(0, 26px, 0); }
   }
 
-  @media (min-width: 900px) and (min-height: 680px){
-    html{ scroll-snap-type: y proximity; }
-    .snap{ scroll-snap-align: start; }
-  }
-
   @supports (animation-timeline: scroll()){
     .prog{
       display: block;
@@ -902,7 +897,6 @@ img.badge{
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  html{ scroll-snap-type: none !important; }
   .runner{ position: static; inline-size: 100%; display: grid; gap: 12px; transform: none !important; }
   .runner::before{ display:none; }
   .runner .plate{ opacity: 1 !important; }
