@@ -1,4 +1,4 @@
-// Package badge computes the color and renders the SVG for an itworks.dev
+// Package badge computes the color and renders the SVG for an itworks.build
 // audit badge. No external references are ever emitted in the SVG.
 package badge
 
@@ -34,7 +34,7 @@ const (
 	fontFamily        = "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif"
 	fontSize          = 11
 	fontWeight        = 600
-	leftLabel         = "itworks.dev"
+	leftLabel         = "itworks.build"
 	glyphCenterOffset = 15.0 // from left plate edge (leftW) to glyph cx
 	textStartOffset   = 32.0 // from left plate edge (leftW) to right-text x
 	trailingPad       = 12.0 // trailing space after right text

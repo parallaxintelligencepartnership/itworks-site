@@ -63,8 +63,8 @@ func TestRenderContainsExpectedContent(t *testing.T) {
 func TestRenderContainsLabel(t *testing.T) {
 	for _, color := range []string{ColorGreen, ColorAmber, ColorRed} {
 		svg := string(Render("2026-01-01", 1, color))
-		if !strings.Contains(svg, "itworks.dev") {
-			t.Errorf("%s render missing label 'itworks.dev': %s", color, svg)
+		if !strings.Contains(svg, "itworks.build") {
+			t.Errorf("%s render missing label 'itworks.build': %s", color, svg)
 		}
 	}
 }

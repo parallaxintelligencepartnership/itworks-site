@@ -1,4 +1,4 @@
-// Package web embeds the itworks.dev templates and static assets.
+// Package web embeds the itworks.build templates and static assets.
 package web
 
 import "embed"

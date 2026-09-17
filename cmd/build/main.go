@@ -1,4 +1,4 @@
-// Command build renders itworks.dev into a directory of static files.
+// Command build renders itworks.build into a directory of static files.
 //
 //	go run ./cmd/build -out dist          write the site
 //	go run ./cmd/build -check             validate entries/ and write nothing
@@ -22,13 +22,13 @@ import (
 	"sort"
 	"time"
 
-	"itworks.dev/internal/badge"
-	"itworks.dev/internal/entry"
-	"itworks.dev/web"
+	"itworks.build/internal/badge"
+	"itworks.build/internal/entry"
+	"itworks.build/web"
 )
 
 // domain is the custom domain GitHub Pages serves, written to CNAME.
-const domain = "itworks.dev"
+const domain = "itworks.build"
 
 func main() {
 	var (
@@ -120,7 +120,7 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		data any
 	}{
 		{"index.html", "landing.html", landingData{
-			Title:           "itworks.dev",
+			Title:           "itworks.build",
 			InstallCommands: installCommands,
 			Entries:         preview,
 		}},

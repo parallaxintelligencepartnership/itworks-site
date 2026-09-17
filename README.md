@@ -1,4 +1,4 @@
-# itworks.dev
+# itworks.build
 
 A public wall of audit results for apps built with the itworks plugin. Each
 entry carries the audit date, what was found, what was fixed, and how many
@@ -69,9 +69,9 @@ Two more flags help when you are working on the badge: `-today 2026-01-31`
 renders against a fixed date, so you can see the amber plate without waiting
 30 days, and `-entries <dir>` reads the entry files from somewhere else.
 
-## Pointing itworks.dev at GitHub Pages
+## Pointing itworks.build at GitHub Pages
 
-DNS records at the registrar for `itworks.dev`:
+DNS records at the registrar for `itworks.build`:
 
 | Type | Name | Value |
 |---|---|---|
@@ -88,7 +88,7 @@ DNS records at the registrar for `itworks.dev`:
 Repository settings to flip, under Settings then Pages:
 
 1. Source: GitHub Actions.
-2. Custom domain: `itworks.dev`. The build writes a `CNAME` file into the
+2. Custom domain: `itworks.build`. The build writes a `CNAME` file into the
    artifact, so the setting and the file agree.
 3. Enforce HTTPS: turn it on once GitHub reports the certificate as issued.
    That takes a few minutes after the DNS records resolve.

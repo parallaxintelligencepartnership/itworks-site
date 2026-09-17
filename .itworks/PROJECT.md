@@ -25,7 +25,7 @@ Hosting target: pi3 (x86_64), docker compose under /opt/itworks, Traefik letsenc
 Real data: other people's closeout summaries (display name, one line, source label, optional repo URL, tier, date, four counts) | Sample data: fixtures/seed-msp-sentinel.json, POSTed by scripts/seed.sh | Sensitive: no by design; the payload never carries code, paths, secrets, or environment, and no IP addresses are stored
 
 ## Where it will live
-internet - exposure notes: https://itworks.dev via Traefik only, no host port published, /admin behind Authentik forward-auth; deploy and domain purchase deferred by Matt on 2026-09-11 - paid services: none
+internet - exposure notes: https://itworks.build via Traefik only, no host port published, /admin behind Authentik forward-auth; deploy and domain purchase deferred by Matt on 2026-09-11 - paid services: none
 
 ## Definition of done
 1. go test ./..., go vet ./..., govulncheck all clean.

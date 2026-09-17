@@ -25,7 +25,7 @@ One package: `go test ./internal/badge -run TestName`
 
 ## Environment
 - GitHub Pages, repo under the parallaxintelligencepartnership org, Pages source set to GitHub Actions.
-- Custom domain itworks.dev; the build writes CNAME into the artifact, and Enforce HTTPS goes on once the certificate issues.
+- Custom domain itworks.build; the build writes CNAME into the artifact, and Enforce HTTPS goes on once the certificate issues.
 - The site rebuilds on every push to main, daily at 05:17 UTC (cron 17 5 * * *), and on demand; the daily build is what turns a badge amber on day 30.
 - There is no host, no container and no database; the whole site is files in the artifact.
 - As of 2026-09-16 the domain is not bought and nothing is published; the site has only been built locally.

@@ -4,15 +4,15 @@ import (
 	"math"
 	"time"
 
-	"itworks.dev/internal/badge"
-	"itworks.dev/internal/entry"
+	"itworks.build/internal/badge"
+	"itworks.build/internal/entry"
 )
 
 // baseURL is where the built site is published. It only appears in the
 // values that have to work away from the site: the badge URL a README
 // embeds and the entry URL the JSON feed publishes. Everything inside a
 // page uses a root relative path so a local preview works too.
-const baseURL = "https://itworks.dev"
+const baseURL = "https://itworks.build"
 
 // view is one entry as the templates and the JSON feed see it. The JSON
 // field set is the one the old API returned, plus critical_accepted.

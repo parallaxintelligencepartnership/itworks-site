@@ -1,7 +1,7 @@
-# itworks.dev site contract
+# itworks.build site contract
 
 A static site. A Go command reads the entry files, renders HTML and SVG into
-a directory, and GitHub Pages serves that directory at https://itworks.dev.
+a directory, and GitHub Pages serves that directory at https://itworks.build.
 There is no server, no database and no container. Go 1.26, standard library
 only, no dependencies at all.
 
@@ -48,7 +48,7 @@ docs/SPEC.md                   this file
 | api/entries.json | `{"entries":[...]}`, same order as the wall |
 | 404.html | GitHub Pages serves this for an unknown path |
 | static/ | the stylesheet and the self hosted fonts, copied from web/static |
-| CNAME | `itworks.dev` |
+| CNAME | `itworks.build` |
 | .nojekyll | empty; it stops GitHub running Jekyll over the artifact |
 
 ## The entry file
@@ -121,7 +121,7 @@ scripts and emoji are all legal.
 {"entries":[{"id":"...","name":"...","summary":"...","source":"...","repo_url":"...",
  "audit_tier":"...","audit_date":"YYYY-MM-DD","found":0,"fixed":0,"accepted":0,
  "critical_open":0,"critical_accepted":0,"age_days":0,"badge_color":"green",
- "badge_url":"https://itworks.dev/badge/<id>.svg","entry_url":"https://itworks.dev/e/<id>/"}]}
+ "badge_url":"https://itworks.build/badge/<id>.svg","entry_url":"https://itworks.build/e/<id>/"}]}
 ```
 
 `badge_url` and `entry_url` are absolute because they are quoted away from
@@ -145,7 +145,7 @@ text, label background `#1f1f1f` with white text. The old `#3fb950` and
 
 `Render` returns the Ledger badge (design source:
 docs/design/ledger-mock-v2.html, the three `<symbol>` sprites): height 20,
-content sized width; left plate `#1f1f1f` with the label `itworks.dev` in
+content sized width; left plate `#1f1f1f` with the label `itworks.build` in
 white; a 1 px joint hairline; then the state plate carrying a state glyph
 (green: filled disc; amber: diamond; red: triangle) 10 px in, and the text
 12 px after the glyph, 12 px trailing. Right text is

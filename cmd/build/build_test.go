@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"itworks.dev/internal/entry"
+	"itworks.build/internal/entry"
 )
 
 // fixtureID is a well formed entry id: 12 characters of lowercase base32.
@@ -73,8 +73,8 @@ func TestBuildRendersEverySiteFile(t *testing.T) {
 		}
 	}
 
-	if got := readFile(t, out, "CNAME"); strings.TrimSpace(got) != "itworks.dev" {
-		t.Fatalf("CNAME = %q, want itworks.dev", got)
+	if got := readFile(t, out, "CNAME"); strings.TrimSpace(got) != "itworks.build" {
+		t.Fatalf("CNAME = %q, want itworks.build", got)
 	}
 
 	// The badge has to be well formed XML, since every other site on the

@@ -1,4 +1,4 @@
-module itworks.dev
+module itworks.build
 
 go 1.26
 
