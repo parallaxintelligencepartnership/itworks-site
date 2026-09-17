@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="itworks.build: the badge plate and its measuring edge">
+  <title>itworks.build</title>
+  <style>
+    .fld   { fill: #041d23 }  /* --field-deep, standing in for the label plate */
+    .point { fill: #b4f000 }  /* --acid: the edge that is measured */
+    .plate { fill: #f3b13a }  /* --sun: the state plate */
+    @media (prefers-color-scheme: dark) {
+      .fld { fill: #0e2e36 }
+    }
+  </style>
+  <rect class="fld" width="64" height="64"/>
+  <rect class="point" x="16" y="8" width="8" height="48"/>
+  <rect class="plate" x="24" y="16" width="36" height="32"/>
+</svg>

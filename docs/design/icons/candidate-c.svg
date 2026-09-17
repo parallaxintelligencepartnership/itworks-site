@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="itworks.build: the hatched marker bar of a stale entry">
+  <title>itworks.build</title>
+  <style>
+    .fld   { fill: #041d23 }  /* --field-deep */
+    .hatch { fill: #d29922 }  /* plate amber: the stale marker pattern */
+    @media (prefers-color-scheme: dark) {
+      .fld   { fill: #0e2e36 }
+      .hatch { fill: #f3b13a }
+    }
+  </style>
+  <clipPath id="sq"><rect width="64" height="64"/></clipPath>
+  <rect class="fld" width="64" height="64"/>
+  <g clip-path="url(#sq)" transform="rotate(-45 32 32)">
+    <rect class="hatch" x="-20" y="10" width="104" height="10"/>
+    <rect class="hatch" x="-20" y="31" width="104" height="10"/>
+    <rect class="hatch" x="-20" y="52" width="104" height="10"/>
+  </g>
+</svg>

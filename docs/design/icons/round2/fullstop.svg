@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><style>:root{--plate:#041d23;--ink:#eff6f6;--acid:#c6f01a}@media (prefers-color-scheme:dark){:root{--plate:#0b3038}}</style>
+<rect width="64" height="64" rx="14" fill="var(--plate)"/>
+<rect x="19" y="14" width="10" height="36" rx="2" fill="var(--ink)"/>
+<circle cx="42" cy="44" r="6.5" fill="var(--acid)"/>
+</svg>

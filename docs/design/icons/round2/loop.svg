@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><style>:root{--plate:#041d23;--ink:#eff6f6;--acid:#c6f01a}@media (prefers-color-scheme:dark){:root{--plate:#0b3038}}</style>
+<rect width="64" height="64" rx="14" fill="var(--plate)"/>
+<circle cx="32" cy="32" r="17" fill="none" stroke="var(--ink)" stroke-width="8" stroke-linecap="round" stroke-dasharray="86 200" transform="rotate(-50 32 32)"/>
+<circle cx="32" cy="15" r="6" fill="var(--acid)" transform="rotate(40 32 32)"/>
+</svg>

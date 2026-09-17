@@ -64,6 +64,9 @@ func TestBuildRendersEverySiteFile(t *testing.T) {
 		filepath.Join("api", "entries.json"),
 		"404.html",
 		filepath.Join("static", "site.css"),
+		filepath.Join("static", "favicon.svg"),
+		filepath.Join("static", "favicon-32.png"),
+		filepath.Join("static", "apple-touch-icon.png"),
 		"CNAME",
 		".nojekyll",
 	}
@@ -75,6 +78,13 @@ func TestBuildRendersEverySiteFile(t *testing.T) {
 
 	if got := readFile(t, out, "CNAME"); strings.TrimSpace(got) != "itworks.build" {
 		t.Fatalf("CNAME = %q, want itworks.build", got)
+	}
+
+	// Every page carries the icon link, so a tab is never blank.
+	for _, page := range []string{"index.html", filepath.Join("wall", "index.html"), "404.html"} {
+		if !strings.Contains(readFile(t, out, page), `<link rel="icon" href="/static/favicon.svg"`) {
+			t.Fatalf("%s is missing the favicon link", page)
+		}
 	}
 
 	// The badge has to be well formed XML, since every other site on the

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="itworks.build: the day 30 mark on the review ruler">
+  <title>itworks.build</title>
+  <style>
+    .fld  { fill: #041d23 }  /* --field-deep, the ledger ground */
+    .lane { fill: #b4f000 }  /* --acid, the elapsed lane the plate travels */
+    .rule { fill: #4d8b9b }  /* --rule-strong, the 60 day scale */
+    .mark { fill: #f3b13a }  /* --sun, the day 30 mark */
+    @media (prefers-color-scheme: dark) {
+      .fld  { fill: #0e2e36 }
+      .rule { fill: #eaf6f8 }
+    }
+  </style>
+  <rect class="fld" width="64" height="64"/>
+  <rect class="lane" x="4" y="24" width="28" height="8"/>
+  <rect class="rule" x="4" y="40" width="56" height="8"/>
+  <rect class="mark" x="28" y="8" width="8" height="48"/>
+</svg>

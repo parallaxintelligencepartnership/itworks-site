@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>round 2</title>
+<style>body{margin:0;font:12px/1.4 -apple-system,sans-serif;color:#888}
+section{padding:20px 24px;display:flex;gap:56px;align-items:flex-end}
+.dark{background:#041d23}.white{background:#fff}.grey{background:#dee3e3}
+figure{margin:0;display:flex;gap:14px;align-items:flex-end}figure img{display:block}
+h2{font:600 11px sans-serif;letter-spacing:.1em;margin:0 0 10px;padding:14px 24px 0}
+.tab{display:inline-flex;align-items:center;gap:6px;background:#f1f3f4;color:#222;border-radius:8px 8px 0 0;padding:6px 12px;font-size:12px}
+.dark .tab{background:#35363a;color:#e8eaed}</style>
+<h2>WHITE</h2><section class="white" id="w"></section>
+<h2>FIELD</h2><section class="dark" id="d"></section>
+<h2>GREY</h2><section class="grey" id="g"></section>
+<script>
+const names=['fullstop','loop','it'];
+for(const sec of ['w','d','g']){const s=document.getElementById(sec);
+ for(const n of names){const f=document.createElement('figure');
+  for(const px of [16,24,32,64,128]){const i=new Image(px,px);i.src=n+'.svg';f.appendChild(i)}
+  const t=document.createElement('span');t.className='tab';t.innerHTML='<img src="'+n+'.svg" width=16 height=16> itworks.build';f.appendChild(t);
+  s.appendChild(f)}}
+</script>
