@@ -43,3 +43,17 @@ Scope: audit tier, target 2026-09-16 @5a87acd (the Go server build). Lanes read 
 - the pull request policy step in check.yml was exercised against five simulated diffs, not against GitHub's own pull_request events
 - GitHub Pages behaviour for the custom domain, HTTPS enforcement and camo caching can only be checked live
 - no lane read web/static/fonts, docs/design or WORKFLOW-PROMPT.md (no logic)
+
+## Checkpoint 2 - 2026-09-16 - lenses: security-auth, real-data
+Scope: checkpoint, diff main...pages (the static rebuild: internal/entry, internal/badge, cmd/build, web, .github/workflows, go.mod), lenses security-auth and real-data, runbooks from the plugin's audit-fixes branch executed by an Opus reviewer. Not covered: live GitHub Pages behaviour, the pull request policy step against real GitHub events (exercised against seven simulated diffs), site.css and fonts. Clean: no secrets in 31 commits, no injection hits, no template.HTML anywhere, output paths cannot escape dist or collide, deploy is not pull request triggerable. go test -race, go vet and gofmt clean.
+### Findings
+- [x] IMPORTANT | security-auth | fork pull request code ran (go test, go run) before the entries-only policy step (.github/workflows/check.yml:18) | Closed 2026-09-16: policy step runs right after checkout (pages 9d5348f)
+- [x] IMPORTANT | real-data | the badge called open plus accepted "critical open" (internal/badge/badge.go:113) | Closed 2026-09-16: badge text and title say "<n> critical"; tests updated (pages 1a7941f)
+- [x] ADVISORY | security-auth | pages write and id-token write granted workflow wide (.github/workflows/pages.yml:12) | Closed 2026-09-16: per job permissions (pages 412c2bb)
+- [x] ADVISORY | security-auth | policy accepted nested paths and symlinks under entries/ and the loader glob was non recursive (.github/workflows/check.yml:40) | Closed 2026-09-16: exact filename regex plus mode 100644 check; loader warns on anything it skips (pages f9e15a8)
+- [x] ADVISORY | real-data | critical_accepted not bounded by accepted (internal/entry/entry.go:205) | Closed 2026-09-16: rule and table test (pages 25f453f)
+- [x] ADVISORY | real-data | repo_url key could be omitted though SPEC says every field is required (internal/entry/entry.go:121) | Closed 2026-09-16: key required, empty string when closed (pages 708f9ed)
+- [x] ADVISORY | security-auth | invisible non Cf runes passed the name rule (internal/entry/entry.go:230) | Closed 2026-09-16: six code points, Zl, Zp and non space whitespace rejected with tests (pages 315b329)
+- [x] ADVISORY | real-data | duplicate id branch unreachable (internal/entry/load.go:55) | Closed 2026-09-16: case insensitive collision check with a self skipping test (pages 24a79f4)
+- [x] ADVISORY | real-data | render never cleared the output dir so a removed entry survived a local rebuild (cmd/build/main.go:105) | Closed 2026-09-16: owned paths removed before writing, test rebuilds after a delete (pages c6b3181)
+- [x] ADVISORY | real-data | SPEC quoted two label plate hexes (docs/SPEC.md:142) | Closed 2026-09-16: single value #1f1f1f (pages 82a98eb)
