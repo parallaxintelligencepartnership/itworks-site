@@ -300,3 +300,58 @@ func TestBadgeColorCountsAcceptedCriticals(t *testing.T) {
 		t.Fatalf("entry page does not show 1 critical accepted:\n%s", page)
 	}
 }
+
+func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
+	entries := []entry.Entry{
+		{
+			ID: "acceptedcrit", Name: "Accepted Crit", Summary: "one critical accepted, none open",
+			Source: "closed", AuditTier: "audit", AuditDate: "2026-09-16",
+			Found: 3, Fixed: 2, Accepted: 1, CriticalOpen: 0, CriticalAccepted: 1,
+			ApprovedAt: time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			ID: "cleanentry01", Name: "Clean Entry", Summary: "nothing critical at all",
+			Source: "closed", AuditTier: "audit", AuditDate: "2026-09-16",
+			Found: 1, Fixed: 1, Accepted: 0, CriticalOpen: 0, CriticalAccepted: 0,
+			ApprovedAt: time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC),
+		},
+	}
+	out := t.TempDir()
+	if err := render(entries, out, time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	wall := readFile(t, out, "wall", "index.html")
+
+	i := strings.Index(wall, `id="acceptedcrit"`)
+	if i < 0 {
+		i = strings.Index(wall, "/e/acceptedcrit/")
+	}
+	if i < 0 {
+		t.Fatalf("wall is missing acceptedcrit")
+	}
+	end := strings.Index(wall[i:], `<div class="badgecell">`)
+	if end < 0 {
+		t.Fatalf("wall row for acceptedcrit has no badgecell")
+	}
+	row := wall[i : i+end]
+	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span> <span class="crit-accepted">(1 accepted)</span>`) {
+		t.Fatalf("wall critical cell does not count the accepted critical:\n%s", row)
+	}
+
+	j := strings.Index(wall, "/e/cleanentry01/")
+	if j < 0 {
+		t.Fatalf("wall is missing cleanentry01")
+	}
+	endJ := strings.Index(wall[j:], `<div class="badgecell">`)
+	if endJ < 0 {
+		t.Fatalf("wall row for cleanentry01 has no badgecell")
+	}
+	rowJ := wall[j : j+endJ]
+	if !strings.Contains(rowJ, `<span class="k">critical</span><span class="v num">0</span></p>`) {
+		t.Fatalf("wall critical cell does not show 0 with nothing appended:\n%s", rowJ)
+	}
+	if strings.Contains(rowJ, "crit-accepted") {
+		t.Fatalf("wall critical cell should not mention accepted for a clean entry:\n%s", rowJ)
+	}
+}

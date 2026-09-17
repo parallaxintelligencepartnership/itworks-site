@@ -29,6 +29,7 @@ type view struct {
 	Accepted         int    `json:"accepted"`
 	CriticalOpen     int    `json:"critical_open"`
 	CriticalAccepted int    `json:"critical_accepted"`
+	CriticalTotal    int    `json:"-"`
 	AgeDays          int    `json:"age_days"`
 	BadgeColor       string `json:"badge_color"`
 	BadgeURL         string `json:"badge_url"`
@@ -54,6 +55,7 @@ func toView(e entry.Entry, today time.Time) view {
 		Accepted:         e.Accepted,
 		CriticalOpen:     e.CriticalOpen,
 		CriticalAccepted: e.CriticalAccepted,
+		CriticalTotal:    e.CriticalOpen + e.CriticalAccepted,
 		AgeDays:          ageInDays(auditDate, today),
 		BadgeColor:       badge.Color(auditDate, e.Critical(), today),
 		BadgeURL:         baseURL + "/badge/" + e.ID + ".svg",

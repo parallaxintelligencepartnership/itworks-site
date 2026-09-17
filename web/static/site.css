@@ -505,6 +505,7 @@ img{ max-inline-size: 100%; }
 }
 .row .n.crit-open .v{ color: var(--flare); }
 .row .n.crit-zero .v{ color: var(--acid); }
+.row .crit-accepted{ font-size: 10.5px; color: var(--chalk-dim); }
 /* the column word stays in the accessibility tree even when the sticky
    header is carrying it visually */
 .row .k{
