@@ -42,4 +42,5 @@ The daily rebuild stops (schedule disabled, workflow broken, or Pages outage). S
 - Project state: `.itworks/` (PROJECT, DECISIONS, REVIEWS, MAP, PROFILE); audits under `docs/audit/`.
 
 ## Ship history
+- 2026-09-18: the public notice board redesign (PR #1, squash merged as ccac73f), footer with the Parallax properties, canonical and Open Graph tags, JSON-LD, sitemap.xml, robots.txt, embed.js; deployed by manual dispatch because event triggers do not run (open finding)
 - 2026-09-17: first ship; GitHub repo created, pages workflow run 35284262592 deployed, custom domain itworks.build on Cloudflare DNS, certificate issued, Enforce HTTPS on; freshness probe pushed to n8n GitOps (knowledge-base f1c651c)
