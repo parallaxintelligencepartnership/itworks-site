@@ -1,33 +1,40 @@
-{{template "head" .Title}}
+{{template "head" .}}
 <main id="main">
 
-<section class="wall wall-page bleed" aria-labelledby="wall-h">
-<div class="wall-head">
-<div>
-<h1 class="h-xl" id="wall-h">The wall</h1>
-<p class="lede">Same columns for everyone.</p>
+<section class="wall-sec bleed" aria-labelledby="wall-h">
+<div class="rule-heavy"></div>
+<p class="dateline"><span>Register <b class="num">001</b></span><span>Public wall</span><span>Same columns for everyone</span><span>Newest first</span></p>
+<div class="rule-hair"></div>
+<h1 class="head h1" id="wall-h">The wall</h1>
+
+{{if .Rows}}
+{{template "colhead"}}
+{{range .Rows}}{{template "noticerow" .}}
+{{end}}
+<p class="dateline reg-end"><span>End of register</span><span>Every notice is a closeout summary, posted by the owner</span></p>
+{{else}}
+<div class="blankboard">
+<p class="cap">Board reading &middot; no notices posted</p>
+<div class="blankrow" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+<div class="blankrow" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+<div class="blankrow" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
 </div>
-<div class="filter" role="group" aria-label="Show">
-<span class="chiplab" aria-hidden="true">Show</span>
-<input type="radio" id="f-all" name="wallfilter" checked>
-<label for="f-all">all</label>
-<input type="radio" id="f-current" name="wallfilter">
-<label for="f-current">current</label>
-<input type="radio" id="f-stale" name="wallfilter">
-<label for="f-stale">stale</label>
-<input type="radio" id="f-crit" name="wallfilter">
-<label for="f-crit">critical</label>
+
+<div class="slot">
+<span class="pin p1"></span><span class="pin p2"></span><span class="pin p3"></span><span class="pin p4"></span>
+<p class="lab">Slot 001 &middot; ruled off, pins in, reserved</p>
+<p class="big">Nothing on the wall yet.</p>
+<p class="sub">Run the closeout review with the itworks plugin and publish the summary. The board fills from the top, and the columns below are already set.</p>
+<div class="ghost" aria-hidden="true">
+<div class="c"><span class="k">audit</span><span class="v num">00</span></div>
+<div class="c"><span class="k">found</span><span class="v num">0</span></div>
+<div class="c"><span class="k">fixed</span><span class="v num">0</span></div>
+<div class="c"><span class="k">accepted</span><span class="v num">0</span></div>
+<div class="c"><span class="k">critical</span><span class="v num">0</span></div>
 </div>
 </div>
 
-{{if .Entries}}
-<div class="ledger">
-{{template "colhead" .}}
-{{range .Entries}}{{template "ledgerrow" .}}
-{{end}}
-</div>
-{{else}}
-<p class="empty">Nothing on the wall yet. Run a closeout and take the first line.</p>
+<p class="dateline reg-end"><span>Slots 002 to 060 &middot; unposted</span></p>
 {{end}}
 
 </section>

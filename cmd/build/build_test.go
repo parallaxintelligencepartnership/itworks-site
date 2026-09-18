@@ -422,10 +422,10 @@ func TestBadgeColorCountsAcceptedCriticals(t *testing.T) {
 	}
 	// The entry page keeps the numbers apart, never added into one word.
 	page := readFile(t, out, "e", "acceptedcrit", "index.html")
-	if !strings.Contains(page, `<span class="lab">critical open</span><span class="v num">0</span>`) {
+	if !strings.Contains(page, `<span class="k">critical open</span><span class="v num">0</span>`) {
 		t.Fatalf("entry page does not show 0 critical open:\n%s", page)
 	}
-	if !strings.Contains(page, `<span class="lab">critical accepted by the owner</span><span class="v num">1</span>`) {
+	if !strings.Contains(page, `<span class="k">critical accepted by the owner</span><span class="v num">1</span>`) {
 		t.Fatalf("entry page does not show 1 critical accepted:\n%s", page)
 	}
 }
@@ -459,15 +459,15 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	if i < 0 {
 		t.Fatalf("wall is missing acceptedcrit")
 	}
-	end := strings.Index(wall[i:], `<div class="badgecell">`)
+	end := strings.Index(wall[i:], `<a class="plate-frame"`)
 	if end < 0 {
-		t.Fatalf("wall row for acceptedcrit has no badgecell")
+		t.Fatalf("wall row for acceptedcrit has no badge plate")
 	}
 	row := wall[i : i+end]
-	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span> <span class="crit-accepted">(1 accepted)</span>`) {
+	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span><span class="note">1 accepted</span>`) {
 		t.Fatalf("wall critical cell does not count the accepted critical:\n%s", row)
 	}
-	if strings.Contains(row, "crit-zero") {
+	if strings.Contains(row, "c-zero") {
 		t.Fatalf("wall critical cell styles an accepted critical as zero:\n%s", row)
 	}
 
@@ -475,18 +475,93 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	if j < 0 {
 		t.Fatalf("wall is missing cleanentry01")
 	}
-	endJ := strings.Index(wall[j:], `<div class="badgecell">`)
+	endJ := strings.Index(wall[j:], `<a class="plate-frame"`)
 	if endJ < 0 {
-		t.Fatalf("wall row for cleanentry01 has no badgecell")
+		t.Fatalf("wall row for cleanentry01 has no badge plate")
 	}
 	rowJ := wall[j : j+endJ]
-	if !strings.Contains(rowJ, `<span class="k">critical</span><span class="v num">0</span></p>`) {
+	if !strings.Contains(rowJ, `<span class="k">critical</span><span class="v num">0</span></div>`) {
 		t.Fatalf("wall critical cell does not show 0 with nothing appended:\n%s", rowJ)
 	}
-	if strings.Contains(rowJ, "crit-accepted") {
+	if strings.Contains(rowJ, `class="note"`) {
 		t.Fatalf("wall critical cell should not mention accepted for a clean entry:\n%s", rowJ)
 	}
-	if !strings.Contains(rowJ, "crit-zero") {
+	if !strings.Contains(rowJ, "c-zero") {
 		t.Fatalf("wall critical cell does not style a clean entry as zero:\n%s", rowJ)
+	}
+}
+
+// pageFiles are the four page kinds, keyed by the path they are written
+// to, for the tests that hold for every page on the site.
+func pageFiles(out string) map[string]string {
+	return map[string]string{
+		"index.html": "index.html",
+		"wall":       filepath.Join("wall", "index.html"),
+		"entry":      filepath.Join("e", fixtureID, "index.html"),
+		"404.html":   "404.html",
+	}
+}
+
+// TestFooterCarriesTheRecordAndFollowsItsLinks pins the footer rules: the
+// legal name is stated once, the sister sites and the repos are listed
+// under headings that say what they are, every outbound link is followed,
+// and LinkedIn is nowhere.
+func TestFooterCarriesTheRecordAndFollowsItsLinks(t *testing.T) {
+	out := t.TempDir()
+	mustRun(t, entriesDirWithFixture(t), out, buildToday, false)
+
+	for name, rel := range pageFiles(out) {
+		body := readFile(t, out, rel)
+		i := strings.Index(body, "<footer")
+		if i < 0 {
+			t.Fatalf("%s has no footer", name)
+		}
+		foot := body[i:]
+
+		// Stated once, as the identity block. The JSON-LD says it again
+		// for a machine, which is not copy on the page.
+		if n := strings.Count(foot, "Parallax Intelligence Partnership, LLC"); n != 1 {
+			t.Fatalf("%s footer names the full legal entity %d times, want exactly once", name, n)
+		}
+		for _, want := range []string{
+			"Battle Creek, Michigan",
+			`href="mailto:hello@parallaxintelligence.ai"`,
+			"This site never runs a model.",
+			"&copy; 2026",
+			// sister sites
+			`href="https://parallaxintelligence.ai"`,
+			`href="https://parallaxintelligence.digital"`,
+			`href="https://stillpub.app"`,
+			`href="https://postmortem.report"`,
+			// the org and every repo it publishes
+			`href="https://github.com/parallaxintelligencepartnership"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks-site"`,
+			`href="https://github.com/parallaxintelligencepartnership/weatherdesk"`,
+			`href="https://github.com/parallaxintelligencepartnership/openscan-hub"`,
+			`href="https://github.com/parallaxintelligencepartnership/pulse-libre"`,
+			`href="https://github.com/parallaxintelligencepartnership/frigateios"`,
+			// the record kept here
+			`href="/wall/"`,
+			`href="/api/entries.json"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks-site#embedding-the-wall-on-another-site"`,
+			// a heading in the notice voice, never the bare brand word
+			"Also posted by this office",
+		} {
+			if !strings.Contains(foot, want) {
+				t.Fatalf("%s footer is missing %q", name, want)
+			}
+		}
+
+		// Link equity is the point of these links: none of them is dropped.
+		if strings.Contains(foot, "nofollow") {
+			t.Fatalf("%s footer marks an outbound link nofollow", name)
+		}
+		if strings.Contains(strings.ToLower(body), "linkedin") {
+			t.Fatalf("%s carries a LinkedIn link", name)
+		}
+		if strings.Contains(foot, ">Parallax<") {
+			t.Fatalf("%s footer uses the bare word Parallax as a heading", name)
+		}
 	}
 }

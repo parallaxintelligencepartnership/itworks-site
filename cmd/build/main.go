@@ -114,25 +114,47 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		preview = preview[:landingPreviewCount]
 	}
 
+	// Every page carries the same build date; only the title and the
+	// current bar link change.
+	head := func(title, nav string) meta {
+		return meta{
+			Title:     title,
+			BuildDate: today.Format("2006-01-02"),
+			Nav:       nav,
+		}
+	}
+
 	pages := []struct {
 		path string
 		tmpl string
 		data any
 	}{
 		{"index.html", "landing.html", landingData{
-			Title:           "itworks.build",
+			meta:            head("itworks.build", ""),
+			NoticeNo:        "001",
 			InstallCommands: installCommands,
 			Entries:         preview,
+			Rows:            rows(preview),
+			States:          boardStates,
+			Published:       publishedFields,
 		}},
-		{filepath.Join("wall", "index.html"), "wall.html", wallData{Title: "The wall", Entries: views}},
-		{"404.html", "notfound.html", pageData{Title: "Page not found"}},
+		{filepath.Join("wall", "index.html"), "wall.html", wallData{
+			meta: head("The wall / itworks.build", "wall"),
+			Rows: rows(views),
+		}},
+		{"404.html", "notfound.html", pageData{
+			meta: head("Not posted / itworks.build", ""),
+		}},
 	}
 	for _, e := range views {
 		pages = append(pages, struct {
 			path string
 			tmpl string
 			data any
-		}{filepath.Join("e", e.ID, "index.html"), "entry.html", entryData{Title: e.Name, Entry: e}})
+		}{filepath.Join("e", e.ID, "index.html"), "entry.html", entryData{
+			meta:  head(e.Name+" / itworks.build", "wall"),
+			Entry: e,
+		}})
 	}
 
 	for _, p := range pages {

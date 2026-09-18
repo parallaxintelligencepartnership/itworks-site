@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A public ledger of apps reviewed by the itworks plugin for Claude Code. Every line carries an audit date and the count of critical findings still open.">
-<title>{{.}}</title>
+<title>{{.Title}}</title>
+<meta name="description" content="A public notice board of closeout audits. Every notice prints the audit date and the criticals still open.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/static/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
@@ -12,45 +12,91 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="page">
 <div class="bar bleed">
+{{template "mark"}}
 <a class="bar-id" href="/">itworks<i>.</i>build</a>
-<nav class="bar-nav" aria-label="Main"><a href="/wall/">the wall</a></nav>
-<span class="bar-key" aria-hidden="true"><i class="k-c"></i><i class="k-s"></i><i class="k-x"></i></span>
-<span class="prog" aria-hidden="true"></span>
+<span class="bar-sep">Public notice board</span>
+<nav class="bar-nav" aria-label="Main"><a href="/wall/"{{if eq .Nav "wall"}} class="on" aria-current="page"{{end}}>The wall</a><a href="/#published">Published</a></nav>
 </div>
 {{end}}
 
+{{/* the brand mark, drawn inline so a notice never waits on a request */}}
+{{define "mark"}}<svg class="mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="14" fill="#041d23"/><rect x="14" y="26" width="10" height="24" rx="2" fill="#eff6f6"/><circle cx="19" cy="16.5" r="5.5" fill="#c6f01a"/><rect x="34" y="12" width="10" height="38" rx="2" fill="#eff6f6"/><rect x="28" y="26" width="22" height="8" rx="2" fill="#eff6f6"/></svg>{{end}}
+
 {{define "footer"}}<footer class="foot bleed">
-<p><b>Parallax Intelligence</b></p>
-<p>Every entry is a closeout summary. This site never runs a model.</p>
-<p class="repo"><a href="https://github.com/parallaxintelligencepartnership/itworks" rel="nofollow noopener noreferrer">github.com/parallaxintelligencepartnership/itworks</a></p>
-</footer>
+<div class="foot-grid">
+<div>
+<div class="id">{{template "mark"}}<b>itworks<i>.</i>build</b></div>
+<p class="never">This site never runs a model.</p>
+<address class="addr">Parallax Intelligence Partnership, LLC<br>Battle Creek, Michigan<br>
+<a href="mailto:hello@parallaxintelligence.ai">hello@parallaxintelligence.ai</a></address>
 </div>
+<nav class="foot-col" aria-labelledby="foot-also">
+<h2 id="foot-also">Also posted by this office</h2>
+<ul>
+<li><a href="https://parallaxintelligence.ai" rel="noopener">parallaxintelligence.ai</a></li>
+<li><a href="https://parallaxintelligence.digital" rel="noopener">parallaxintelligence.digital</a></li>
+<li><a href="https://stillpub.app" rel="noopener">stillpub.app</a></li>
+<li><a href="https://postmortem.report" rel="noopener">postmortem.report</a></li>
+</ul>
+</nav>
+<nav class="foot-col" aria-labelledby="foot-code">
+<h2 id="foot-code">The code, on GitHub</h2>
+<ul>
+<li><a href="https://github.com/parallaxintelligencepartnership" rel="noopener">The org</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/itworks" rel="noopener">itworks</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/itworks-site" rel="noopener">itworks-site</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/weatherdesk" rel="noopener">weatherdesk</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/openscan-hub" rel="noopener">openscan-hub</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/pulse-libre" rel="noopener">pulse-libre</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/frigateios" rel="noopener">frigateios</a></li>
+</ul>
+</nav>
+<nav class="foot-col" aria-labelledby="foot-record">
+<h2 id="foot-record">The record kept here</h2>
+<ul>
+<li><a href="/wall/">The wall</a></li>
+<li><a href="/api/entries.json">JSON feed, /api/entries.json</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/itworks-site#embedding-the-wall-on-another-site" rel="noopener">Embed the wall</a></li>
+</ul>
+</nav>
+</div>
+<div class="foot-base">
+<span class="num">&copy; 2026 itworks.build</span>
+<span>Posted in Battle Creek, Michigan</span>
+<span class="num">Notice board 001</span>
+</div>
+</footer>
 </body>
 </html>{{end}}
 
-{{define "colhead"}}<ol class="colhead" aria-hidden="true">
-<li></li><li>app</li><li>what it does</li><li>audit</li>
-<li>found</li><li>fixed</li><li>accepted</li><li>critical</li><li>badge</li>
-</ol>{{end}}
+{{/* the state word, in split flap cells, with the word itself for a
+     screen reader instead of the loose letters */}}
+{{define "flap"}}<span class="flap {{.Class}}" role="img" aria-label="{{.Label}}">{{range .Cells}}{{if .Space}}<b class="sp" aria-hidden="true"></b>{{else}}<b>{{.Char}}</b>{{end}}{{end}}</span>{{end}}
 
-{{define "ledgerrow"}}<article class="row {{if eq .BadgeColor "red"}}is-critical{{else if eq .BadgeColor "amber"}}is-stale{{else}}is-current{{end}}">
-<div class="marker" aria-hidden="true"></div>
-<div class="id">
-<h3 class="name"><a href="{{.EntryPath}}">{{.Name}}</a></h3>
-<p class="src"><b>{{.Source}}</b> {{if .RepoURL}}<a href="{{.RepoURL}}" rel="nofollow noopener noreferrer">repo</a>{{else}}source not published{{end}}</p>
+{{define "colhead"}}<div class="colhead" aria-hidden="true">
+<span>no.</span><span>name and summary</span><span>audit</span><span>found</span><span>fixed</span><span>accepted</span><span>critical</span><span>badge</span>
+</div>{{end}}
+
+{{/* one posted notice in the register: the wall row and the landing
+     preview row are the same line of the same board */}}
+{{define "noticerow"}}<article class="entry">
+<p class="no num">{{.No}}</p>
+<div>
+<h2 class="name"><a href="{{.Entry.EntryPath}}">{{.Entry.Name}}</a></h2>
+<p class="sum">{{.Entry.Summary}}</p>
+<p class="src"><b>{{.Entry.Source}}</b> {{if .Entry.RepoURL}}<a href="{{.Entry.RepoURL}}" rel="nofollow noopener noreferrer">{{.Entry.RepoURL}}</a>{{else}}source not published{{end}}</p>
 </div>
-<p class="what">{{.Summary}}</p>
-<p class="when"><b>{{.AuditTier}}</b> <span class="num">{{.AuditDate}}</span></p>
+<p class="audit"><b>{{.Entry.AuditTier}}</b><span class="num">{{.Entry.AuditDate}}</span><br><span class="num">day {{.Entry.AgeDays}}</span>
+<span class="minirule" style="--d:{{.Entry.AgeDays}}" aria-hidden="true"><span class="pip"></span></span></p>
 <div class="counts">
-<p class="n"><span class="k">found</span><span class="v num">{{.Found}}</span></p>
-<p class="n"><span class="k">fixed</span><span class="v num">{{.Fixed}}</span></p>
-<p class="n"><span class="k">accepted</span><span class="v num">{{.Accepted}}</span></p>
-<p class="n {{if .CriticalTotal}}crit-open{{else}}crit-zero{{end}}"><span class="k">critical</span><span class="v num">{{.CriticalTotal}}</span>{{if .CriticalAccepted}} <span class="crit-accepted">({{.CriticalAccepted}} accepted)</span>{{end}}</p>
+<div class="c"><span class="k">found</span><span class="v num">{{.Entry.Found}}</span></div>
+<div class="c"><span class="k">fixed</span><span class="v num">{{.Entry.Fixed}}</span></div>
+<div class="c"><span class="k">accepted</span><span class="v num">{{.Entry.Accepted}}</span></div>
+<div class="c {{if .Entry.CriticalTotal}}c-crit{{else}}c-zero{{end}}"><span class="k">critical</span><span class="v num">{{.Entry.CriticalTotal}}</span>{{if .Entry.CriticalAccepted}}<span class="note">{{.Entry.CriticalAccepted}} accepted</span>{{end}}</div>
 </div>
-<div class="badgecell">
-<img class="badge" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open, {{.CriticalAccepted}} critical accepted by the owner">
-<span class="state">{{if eq .BadgeColor "red"}}critical open{{else if eq .BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
+<div>
+<a class="plate-frame" href="{{.Entry.EntryPath}}"><img class="plate" src="{{.Entry.BadgePath}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open, {{.Entry.CriticalAccepted}} critical accepted by the owner"></a>
+<span class="state">State: {{.Entry.State}}</span>
 </div>
 </article>{{end}}
