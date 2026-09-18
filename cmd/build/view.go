@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"math"
+	"strings"
 	"time"
 
 	"itworks.build/internal/badge"
@@ -15,6 +18,18 @@ import (
 // has to name its own absolute address for a crawler. Everything else
 // inside a page uses a root relative path so a local preview works too.
 const baseURL = "https://itworks.build"
+
+// organization is the publisher of the board, named once here and used for
+// the footer copy, the JSON-LD, and nowhere else.
+const (
+	orgName    = "Parallax Intelligence Partnership, LLC"
+	orgURL     = "https://parallaxintelligence.ai"
+	orgEmail   = "hello@parallaxintelligence.ai"
+	orgCity    = "Battle Creek"
+	orgRegion  = "MI"
+	orgCountry = "US"
+	siteName   = "itworks.build"
+)
 
 // view is one entry as the templates and the JSON feed see it. The JSON
 // field set is the one the old API returned, plus critical_accepted.
@@ -143,10 +158,14 @@ func newFlap(class, word string) flap {
 // register preview.
 const landingPreviewCount = 3
 
-// meta is the head of a page: what it is called, when it was built, and
-// which bar link is current. Every page data struct embeds it.
+// meta is the head of a page: what it is called, what it says it is, and
+// where it lives. Every page data struct embeds it, so every page carries a
+// canonical URL, a description and the publisher's JSON-LD.
 type meta struct {
-	Title string
+	Title       string
+	Description string
+	Canonical   string
+	JSONLD      template.JS
 	// BuildDate is the day this copy of the site was rendered, printed on
 	// the notice header as the posted date.
 	BuildDate string
@@ -249,4 +268,73 @@ type installTab struct {
 var installCommands = []installTab{
 	{No: "Tab 01", What: "add the marketplace", Command: "claude plugin marketplace add parallaxintelligencepartnership/itworks"},
 	{No: "Tab 02", What: "install the plugin", Command: "claude plugin install itworks@itworks"},
+}
+
+// Page descriptions. Each one is under 160 characters, says what the page
+// is, and never repeats another page's line.
+const (
+	landingDescription  = "A public notice board of closeout audits. Every notice prints the audit date and the criticals still open, and the badge says so in a README."
+	wallDescription     = "The public register of closeout audits, newest first. Same columns for everyone: audit date, findings found, fixed and accepted, criticals open."
+	notFoundDescription = "This page is not posted on itworks.build. A notice that was taken down leaves no page behind."
+)
+
+// entryDescription is the description a crawler and a link preview get for
+// one posted notice: the name, the one line, and the two facts that date it.
+func entryDescription(e view) string {
+	d := fmt.Sprintf("%s: %s Audit %s, %d critical open.", e.Name, e.Summary, e.AuditDate, e.CriticalOpen)
+	return clip(d, 300)
+}
+
+// clip cuts a description at the last space before n runes so a crawler
+// never gets half a word.
+func clip(s string, n int) string {
+	if len([]rune(s)) <= n {
+		return s
+	}
+	r := []rune(s)[:n]
+	if i := strings.LastIndex(string(r), " "); i > 0 {
+		return string(r)[:i]
+	}
+	return string(r)
+}
+
+// siteJSONLD is the publisher and the site, as one JSON-LD graph. It is
+// built with encoding/json rather than written into the template by hand,
+// so the escaping is the encoder's job and no page can emit broken JSON.
+func siteJSONLD() (template.JS, error) {
+	org := map[string]any{
+		"@type": "Organization",
+		"@id":   orgURL + "#organization",
+		"name":  orgName,
+		"url":   orgURL,
+		"email": orgEmail,
+		"address": map[string]any{
+			"@type":           "PostalAddress",
+			"addressLocality": orgCity,
+			"addressRegion":   orgRegion,
+			"addressCountry":  orgCountry,
+		},
+		"sameAs": []string{
+			"https://parallaxintelligence.digital",
+			"https://stillpub.app",
+			"https://postmortem.report",
+			"https://github.com/parallaxintelligencepartnership",
+		},
+	}
+	site := map[string]any{
+		"@type":     "WebSite",
+		"@id":       baseURL + "#website",
+		"name":      siteName,
+		"url":       baseURL,
+		"publisher": map[string]any{"@id": orgURL + "#organization"},
+	}
+	doc := map[string]any{
+		"@context": "https://schema.org",
+		"@graph":   []any{org, site},
+	}
+	b, err := json.Marshal(doc)
+	if err != nil {
+		return "", fmt.Errorf("render the JSON-LD: %w", err)
+	}
+	return template.JS(b), nil
 }
