@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The card file, specimen &#183; itworks.build</title>
+<meta name="description" content="A specimen view of the itworks.build card file with three fictional cards, showing the ruled columns, the punch scale and the three stamps.">
+<style>
+/* itworks.build / THE INSPECTION SHEET - round 3 mock. No JavaScript. */
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;
+  src:url("../../../../web/static/fonts/archivo-latin-var.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:swap;
+  src:url("../../../../web/static/fonts/jetbrainsmono-latin-var.woff2") format("woff2")}
+
+:root{
+  color-scheme: light;
+  --desk:#242a24;          /* the filing cabinet the card sits in; seen through every punched hole */
+  --stock:#d9dbd0;         /* card stock */
+  --stock-2:#cdd0c4;       /* reinforced binding edge */
+  --stock-3:#d1d4c8;       /* alternating field inside boxes */
+  --canary:#ddd6a6;        /* the carbon copy */
+  --blue:#9fb2c2;          /* non repro blue: printed form rules */
+  --blue-2:#3f5a73;        /* printed form small type */
+  --ink:#161c18;           /* press ink */
+  --ink-2:#4e564e;
+  --red:#a8291c;           /* inspector red */
+  --file:#1f4e79;          /* file blue stamp pad */
+  --green:#1a6b34;
+  --amber:#7a5308;
+  --plate-green:#1a7f37; --plate-amber:#d29922; --plate-red:#b3261e; --plate-label:#1f1f1f;
+  --rail:clamp(26px,3.4vw,54px);
+  --gut:clamp(14px,2.5vw,40px);
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;border-radius:0}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;overflow-x:clip;background:var(--desk);color:var(--ink);
+  font-family:var(--sans);font-variation-settings:"wdth" 100,"wght" 420;
+  font-size:clamp(14px,.4vw+13.2px,17px);line-height:1.45;font-synthesis-weight:none;text-rendering:optimizeLegibility}
+h1,h2,h3{margin:0;line-height:1.02}
+p,ul,ol,dl,dd,figure{margin:0;padding:0}
+li{list-style:none}
+b,strong{font-variation-settings:"wdth" 100,"wght" 720}
+a{color:var(--file);text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{color:var(--red)}
+:focus-visible{outline:2.5px solid var(--red);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1}
+.defs{position:absolute;inline-size:0;block-size:0;overflow:hidden}
+.skip{position:absolute;inset-inline-start:-9999px;inset-block-start:0;z-index:9;background:var(--red);color:#fff;
+  font-family:var(--mono);font-size:12px;padding:9px 14px}
+.skip:focus{inset-inline-start:0}
+
+/* ---------- the sheet and its binding edge ---------- */
+.sheet{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-block-size:100svh;background:var(--stock)}
+.rail{background-color:var(--stock-2);border-inline-end:1px solid var(--ink);
+  background-image:
+    radial-gradient(circle at 50% 30px, var(--desk) 7px, rgba(0,0,0,.28) 7.2px, rgba(0,0,0,.28) 8px, transparent 8.4px);
+  background-size:100% 112px;background-repeat:repeat-y;background-position:0 0}
+.body{min-inline-size:0;display:flex;flex-direction:column}
+main{flex:1 0 auto}
+
+/* ---------- head rule of the card ---------- */
+.bar{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;
+  padding:7px var(--gut);border-block-end:1px solid var(--ink);background:var(--stock-2)}
+.bar .mark{inline-size:22px;block-size:22px;display:block;flex:none}
+.bar-id{font-variation-settings:"wdth" 108,"wght" 780;font-size:15px;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+.bar-id i{font-style:normal;color:var(--red)}
+.bar-nav{margin-inline-start:auto;display:flex;gap:14px}
+.bar-nav a,.bar-serial{font-family:var(--mono);font-size:11px;letter-spacing:.02em}
+.bar-serial{color:var(--ink-2)}
+.bar-nav a[aria-current]{color:var(--red);text-decoration-thickness:2px}
+
+/* ---------- boxes of the form ---------- */
+.plate{position:relative;border:1px solid var(--ink);border-inline:0;margin-block-start:-1px;
+  padding:clamp(18px,2.6vw,30px) var(--gut) clamp(20px,3vw,34px)}
+.plate-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 18px;flex-wrap:wrap;
+  border-block-end:1px solid var(--ink);padding-block-end:5px;margin-block-end:clamp(14px,2vw,22px)}
+.lab{font-variation-settings:"wdth" 84,"wght" 760;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-2)}
+.pl-no{font-family:var(--mono);font-size:11px;color:var(--red);white-space:nowrap}
+.h{font-variation-settings:"wdth" 92,"wght" 800;font-size:clamp(21px,3.1vw,34px);letter-spacing:-.022em;max-inline-size:26ch}
+.note{font-size:clamp(13px,1.05vw,15px);color:var(--ink-2);max-inline-size:60ch}
+.note b{color:var(--ink)}
+
+/* ruled writing lines, the way a carbon form prints them */
+.ruled{--rh:30px;line-height:var(--rh);
+  background-image:repeating-linear-gradient(to bottom,transparent 0 calc(var(--rh) - 1px),var(--blue) calc(var(--rh) - 1px) var(--rh))}
+
+/* ---------- head block ---------- */
+.head > *{min-inline-size:0}
+.head{display:grid;gap:clamp(18px,2.6vw,34px);grid-template-columns:minmax(0,1fr);
+  padding:clamp(20px,3vw,40px) var(--gut) clamp(22px,3.2vw,40px);border-block-end:1px solid var(--ink)}
+@media (min-width:900px){.head{grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);align-items:end}}
+.wordmark{font-variation-settings:"wdth" 118,"wght" 860;font-size:clamp(2.05rem,8.6vw,3.7rem);
+  letter-spacing:-.035em;line-height:.9;white-space:nowrap}
+@media (min-width:900px){.wordmark{font-size:min(6.5vw,7rem)}}
+.wordmark i{font-style:normal;color:var(--red)}
+.kicker{display:flex;align-items:center;gap:10px;margin-block-end:12px}
+.kicker .mark{inline-size:34px;block-size:34px;flex:none}
+.kicker span{font-variation-settings:"wdth" 84,"wght" 740;font-size:11px;letter-spacing:.26em;text-transform:uppercase}
+.claim{margin-block-start:clamp(14px,2vw,22px);font-variation-settings:"wdth" 96,"wght" 560;
+  font-size:clamp(17px,2.2vw,26px);line-height:1.22;letter-spacing:-.012em;max-inline-size:31ch}
+.claim b{display:block;font-variation-settings:"wdth" 96,"wght" 820}
+.issue{border:1px solid var(--ink);background:var(--stock-3);min-inline-size:0}
+.issue dl{display:grid;grid-template-columns:8.5rem minmax(0,1fr)}
+.issue dt,.issue dd{padding:7px 10px;border-block-start:1px solid var(--blue);min-inline-size:0}
+.issue dt{font-variation-settings:"wdth" 84,"wght" 720;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-2);border-inline-end:1px solid var(--blue)}
+.issue dd{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere}
+.issue dl > :nth-child(1),.issue dl > :nth-child(2){border-block-start:0}
+.issue-cap{padding:6px 10px;border-block-end:1px solid var(--ink);background:var(--ink);color:var(--stock);
+  font-variation-settings:"wdth" 84,"wght" 760;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+
+/* ---------- rubber stamps ---------- */
+.stamp{display:inline-block;color:var(--red);border:2.5px solid currentColor;outline:1px solid currentColor;outline-offset:3px;
+  padding:.34em .6em .28em;text-indent:.2em;font-variation-settings:"wdth" 84,"wght" 830;
+  font-size:clamp(13px,1.45vw,17px);letter-spacing:.2em;text-transform:uppercase;line-height:1.1;
+  transform:rotate(-2.6deg);mix-blend-mode:multiply;filter:url(#ink);white-space:nowrap}
+.stamp.ok{color:var(--green)}
+.stamp.warn{color:var(--amber);transform:rotate(1.8deg)}
+.stamp.filed{color:var(--file);transform:rotate(1.2deg);font-size:11px;border-width:2px;letter-spacing:.16em}
+.stamp.sm{font-size:11.5px;border-width:2px;padding:.28em .5em .22em}
+.stamp.big{font-size:clamp(15px,2.6vw,29px);border-width:3.5px;outline-offset:4px;
+  white-space:normal;max-inline-size:100%;min-inline-size:0}
+
+/* ---------- three plate blocks ---------- */
+.plates{display:grid;gap:0;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.plates{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .plates > * + *{border-inline-start:1px solid var(--ink);margin-inline-start:-1px}}
+.pbox{border:1px solid var(--ink);margin-block-start:-1px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px;min-inline-size:0}
+@media (min-width:980px){.pbox{margin-block-start:0}}
+.pbox-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-block-size:44px}
+.pbox-no{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.pbox dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0;border-block-start:1px solid var(--blue)}
+.pbox dt,.pbox dd{padding:5px 0;border-block-end:1px solid var(--blue);font-size:12px;min-inline-size:0}
+.pbox dt{font-variation-settings:"wdth" 84,"wght" 720;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-2);padding-inline-end:12px}
+.pbox dd{font-family:var(--mono);text-align:end;overflow-wrap:anywhere}
+.pbox p{font-size:13px;color:var(--ink-2)}
+svg.badge{display:block;width:100%;inline-size:100%;max-width:421px;height:auto;block-size:auto}
+.badge-hold{border:1px dashed var(--blue);padding:8px;background:var(--stock-3)}
+
+/* ---------- the scale of days ---------- */
+.scale-wrap{margin-block-start:clamp(18px,2.4vw,26px)}
+.scale{position:relative;margin-inline:11px;padding-block:52px 30px}
+.scale-track{position:relative;block-size:24px;border-block-end:1.6px solid var(--ink);border-inline-end:1.6px solid var(--ink)}
+.scale-track::before{content:"";position:absolute;inset-inline:0;inset-block-end:0;block-size:8px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px calc(100% / 60))}
+.scale-track::after{content:"";position:absolute;inset-inline:0;inset-block-end:0;block-size:19px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 1.6px,transparent 1.6px calc(100% / 6))}
+.scale-n{position:absolute;inset-block-start:calc(100% + 7px);inset-inline-start:calc(var(--d) / 60 * 100%);
+  transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.scale-n[style*="--d:0"]{transform:none}
+.scale-unit{position:absolute;inset-block-start:calc(100% + 7px);inset-inline-end:0;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.thresh{position:absolute;inset-block:34px 36px;inset-inline-start:50%;inline-size:2px;background:var(--red);transform:translateX(-1px)}
+.thresh span{position:absolute;inset-block-start:-20px;inset-inline-start:50%;transform:translateX(-50%);
+  font-variation-settings:"wdth" 84,"wght" 780;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);white-space:nowrap;background:var(--stock);padding-inline:5px}
+.punch{position:absolute;inset-block-start:16px;inset-inline-start:calc(var(--d) / 60 * 100%);transform:translateX(-50%);
+  inline-size:17px;block-size:17px;border-radius:50%;background:var(--desk);box-shadow:inset 0 0 0 1px rgba(0,0,0,.45)}
+.punch::after{content:"";position:absolute;inset-block-start:17px;inset-inline-start:50%;inline-size:1px;block-size:19px;
+  background:var(--ink)}
+.punch b{position:absolute;inset-block-end:24px;inset-inline-start:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;background:var(--stock);padding-inline:4px}
+.punch.open{background:transparent;box-shadow:inset 0 0 0 1.5px var(--blue)}
+.punch.open::after{background:var(--blue)}
+.reads{display:grid;gap:12px;margin-block-start:clamp(16px,2.2vw,24px)}
+.read{display:grid;gap:8px;align-items:center;grid-template-columns:minmax(0,1fr);
+  border-block-start:1px solid var(--blue);padding-block-start:10px}
+@media (min-width:760px){.read{grid-template-columns:11.5rem minmax(0,1fr)}}
+.read .k{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.read > *{min-inline-size:0}
+.red-line{margin-block-start:clamp(16px,2.2vw,22px);border-block-start:2.5px solid var(--red);padding-block-start:10px;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.red-line p{font-size:clamp(13px,1.05vw,15px);max-inline-size:52ch}
+
+/* ---------- procedure / install ---------- */
+.steps{display:grid;gap:0}
+.step{display:grid;grid-template-columns:2.6rem minmax(0,1fr);border:1px solid var(--ink);margin-block-start:-1px;background:var(--stock-3)}
+.step-n{display:grid;place-items:center;border-inline-end:1px solid var(--ink);background:var(--stock-2);
+  font-family:var(--mono);font-size:13px}
+.step-b{padding:10px 12px 12px;min-inline-size:0}
+.step-b .k{font-variation-settings:"wdth" 84,"wght" 720;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-block-end:5px}
+.step-b code{font-family:var(--mono);font-size:clamp(11.5px,1.5vw,14.5px);line-height:1.55;overflow-wrap:anywhere;
+  display:block;border-block-end:1px solid var(--blue);padding-block-end:3px}
+
+/* ---------- published data checklist ---------- */
+.fields{display:grid;gap:0 clamp(16px,3vw,44px);grid-template-columns:minmax(0,1fr)}
+@media (min-width:640px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1080px){.fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.chk{display:grid;grid-template-columns:19px minmax(0,1fr);gap:11px;align-items:start;
+  padding-block:8px;border-block-end:1px solid var(--blue);font-family:var(--mono);font-size:13px}
+.chk i{position:relative;inline-size:15px;block-size:15px;border:1.5px solid var(--ink);margin-block-start:3px;display:block}
+.chk i::before,.chk i::after{content:"";position:absolute;inset-block-start:50%;inset-inline-start:-3px;
+  inline-size:19px;block-size:2px;background:var(--file);mix-blend-mode:multiply}
+.chk i::before{transform:rotate(43deg)}
+.chk i::after{transform:rotate(-41deg)}
+.stop{margin-block-start:clamp(20px,2.6vw,30px);display:flex;flex-wrap:wrap;gap:16px 26px;align-items:center;min-inline-size:0;
+  border-block-start:2.5px solid var(--ink);padding-block-start:clamp(16px,2.2vw,22px)}
+.sig{flex:1 1 16rem;min-inline-size:0}
+.sig p{font-size:15px;border-block-end:1px solid var(--ink);padding-block-end:4px}
+.sig span{font-variation-settings:"wdth" 84,"wght" 720;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-block-start:5px}
+
+/* ---------- the card file ---------- */
+.file{container-type:inline-size;border-block-start:1px solid var(--ink)}
+.filerow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,2fr) 7.4rem repeat(5,minmax(0,3.6rem))}
+.filehead{border-block-end:1px solid var(--ink);background:var(--stock-2)}
+.filehead > *{padding:6px 10px;border-inline-start:1px solid var(--blue);
+  font-variation-settings:"wdth" 82,"wght" 740;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2)}
+.filehead > :first-child{border-inline-start:0}
+.filehead .n{text-align:end}
+.card{border-block-end:1px solid var(--ink);background:var(--stock)}
+.card:nth-of-type(even){background:var(--stock-3)}
+.tab{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:7px var(--gut) 7px 0;
+  border-block-end:1px solid var(--blue);min-block-size:46px}
+.tab-lab{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:var(--stock);
+  padding:5px 12px 5px var(--gut);font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  transition:transform .22s cubic-bezier(.2,.7,.2,1)}
+.card:hover .tab-lab,.card:focus-within .tab-lab{transform:translateX(9px)}
+.tab .state{font-variation-settings:"wdth" 84,"wght" 720;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.tab .stamp{margin-inline-start:auto}
+.filerow.data > *{padding:12px 10px;border-inline-start:1px solid var(--blue);min-inline-size:0}
+.filerow.data > :first-child{border-inline-start:0;padding-inline-start:var(--gut)}
+.filerow.data > :last-child{padding-inline-end:var(--gut)}
+.cname{font-variation-settings:"wdth" 96,"wght" 800;font-size:clamp(16px,1.5vw,20px);letter-spacing:-.015em}
+.cname a{color:var(--ink);text-decoration-color:var(--blue)}
+.csrc{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-block-start:4px;overflow-wrap:anywhere}
+.cwhat{font-size:13.5px;color:var(--ink-2)}
+.cwhen{font-family:var(--mono);font-size:12px}
+.cwhen b{display:block;font-family:var(--sans);font-variation-settings:"wdth" 84,"wght" 720;font-size:9.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);margin-block-end:3px}
+.cn{text-align:end;font-family:var(--mono);font-size:clamp(17px,1.7vw,22px);font-variant-numeric:tabular-nums lining-nums}
+.cn span{display:none}
+.cn.hot{color:var(--red);font-weight:700}
+.cn.zero{color:var(--ink-2)}
+.strip{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;
+  padding:14px var(--gut) 18px;border-block-start:1px solid var(--blue)}
+.strip svg.badge{max-width:368px}
+.strip-scale{flex:1 1 15rem;min-inline-size:0}
+.mini{position:relative;block-size:22px;border-block-end:1.4px solid var(--ink);margin-block-end:14px}
+.mini::before{content:"";position:absolute;inset-inline:0;inset-block-end:0;block-size:7px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px calc(100% / 60))}
+.mini .t30{position:absolute;inset-block:-4px 0;inset-inline-start:50%;inline-size:2px;background:var(--red)}
+.mini .pk{position:absolute;inset-block-start:4px;inset-inline-start:calc(var(--d) / 60 * 100%);transform:translateX(-50%);
+  inline-size:13px;block-size:13px;border-radius:50%;background:var(--desk);box-shadow:inset 0 0 0 1px rgba(0,0,0,.45)}
+.mini-cap{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+@container (max-width:880px){
+  .filehead{display:none}
+  .filerow{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .filerow.data > *{border-inline-start:0}
+  .filerow.data > :nth-child(1),.filerow.data > :nth-child(2),.filerow.data > :nth-child(3){
+    grid-column:1 / -1;padding-inline:var(--gut);border-block-end:1px solid var(--blue)}
+  .filerow.data > :nth-child(n+4){border-inline-start:1px solid var(--blue);text-align:start;padding:10px var(--gut) 12px}
+  .filerow.data > :nth-child(4){border-inline-start:0}
+  .filerow.data > :nth-child(8){border-block-start:1px solid var(--blue)}
+  .cn span{display:block;font-family:var(--sans);font-variation-settings:"wdth" 82,"wght" 730;font-size:9.5px;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2);margin-block-end:3px}
+}
+
+/* ---------- the open slot ---------- */
+.slot{border:2px dashed var(--blue);margin:clamp(16px,2.4vw,26px) var(--gut);padding:clamp(16px,2.4vw,26px);background:var(--stock-3)}
+.slot-top{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;
+  border-block-end:1px solid var(--ink);padding-block-end:10px;margin-block-end:clamp(14px,2vw,20px)}
+.slot h2{font-variation-settings:"wdth" 92,"wght" 820;font-size:clamp(20px,2.7vw,30px);letter-spacing:-.02em}
+.blankrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+@media (min-width:760px){.blankrow{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.blankrow > div{border:1px solid var(--blue);margin:-.5px;padding:10px;min-block-size:62px;min-inline-size:0}
+.blankrow .k{font-variation-settings:"wdth" 82,"wght" 730;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-2);display:block}
+.blankrow .v{font-family:var(--mono);font-size:19px;color:var(--blue)}
+.blankrow .blank{display:block;block-size:19px;border-block-end:1.5px solid var(--blue);margin-block-start:8px}
+.sr{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.nostamp{display:inline-block;border:2px dashed var(--blue);color:var(--blue-2);padding:.42em .7em;
+  font-variation-settings:"wdth" 84,"wght" 780;font-size:clamp(12px,1.3vw,15px);letter-spacing:.2em;text-transform:uppercase}
+.queue{border-block-start:1px solid var(--ink)}
+.queue li{display:flex;align-items:center;gap:14px;padding:11px var(--gut);border-block-end:1px solid var(--blue);
+  font-family:var(--mono);font-size:11.5px;color:var(--blue-2)}
+.queue li::before{content:"";inline-size:26px;block-size:11px;border:1px solid var(--blue);border-block-end:0;flex:none}
+.queue li::after{content:"empty";margin-inline-start:auto;letter-spacing:.14em;text-transform:uppercase;
+  font-family:var(--sans);font-variation-settings:"wdth" 82,"wght" 720;font-size:9.5px}
+
+/* ---------- perforation and the carbon copy footer ---------- */
+.perf{block-size:13px;background-color:var(--stock);
+  background-image:radial-gradient(circle at 50% 50%, var(--desk) 1.7px, transparent 2.1px);
+  background-size:13px 13px;border-block:1px solid var(--ink)}
+.stub{background:var(--canary);color:var(--ink);padding:clamp(18px,2.6vw,30px) var(--gut) clamp(20px,2.8vw,32px)}
+.stub-lab{font-variation-settings:"wdth" 84,"wght" 760;font-size:10px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ink-2);border-block-end:1px solid var(--ink);padding-block-end:7px;margin-block-end:clamp(16px,2.2vw,24px);
+  display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+.stub-grid{display:grid;gap:clamp(16px,2.4vw,30px);grid-template-columns:minmax(0,1fr)}
+@media (min-width:720px){.stub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1080px){.stub-grid{grid-template-columns:1.1fr .9fr .9fr 1fr}}
+.stub-grid section{min-inline-size:0}
+.stub h2{font-variation-settings:"wdth" 82,"wght" 750;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-2);border-block-end:1px solid rgba(22,28,24,.35);padding-block-end:5px;margin-block-end:9px}
+.stub p,.stub li{font-size:13.5px;line-height:1.55}
+.stub li{padding-block:2px}
+.stub .mono{font-family:var(--mono);font-size:12.5px;overflow-wrap:break-word;line-height:1.5}
+.stub-id{display:flex;align-items:center;gap:11px;margin-block-end:11px}
+.stub-id .mark{inline-size:30px;block-size:30px;flex:none}
+.stub-id b{font-variation-settings:"wdth" 108,"wght" 800;font-size:19px;letter-spacing:-.015em}
+.stub-id b i{font-style:normal;color:var(--red)}
+.stub-foot{margin-block-start:clamp(18px,2.4vw,26px);border-block-start:1px solid var(--ink);padding-block-start:11px;
+  display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;justify-content:space-between}
+.stub-foot p{font-size:12.5px;color:var(--ink-2)}
+.stub-foot .say{font-variation-settings:"wdth" 92,"wght" 780;font-size:clamp(14px,1.4vw,17px);color:var(--ink)}
+.stub a{color:#17405f}
+
+/* ---------- ink settles as the sheet is read (never required) ---------- */
+@media (prefers-reduced-motion:no-preference){
+  @supports (animation-timeline:view()){
+    .plate,.card,.slot,.step,.pbox{animation:ink linear both;animation-timeline:view();animation-range:entry 2% cover 13%}
+    .stamp{animation:press linear both;animation-timeline:view();animation-range:entry 4% cover 16%}
+    @keyframes ink{from{opacity:0;transform:translate3d(0,9px,0)}to{opacity:1;transform:none}}
+    @keyframes press{0%{opacity:0;transform:rotate(-2.6deg) scale(1.06)}
+      40%{opacity:1;transform:rotate(-2.6deg) scale(1)}100%{opacity:1;transform:rotate(-2.6deg) scale(1)}}
+    .stamp.warn,.stamp.filed,.stamp.sm{animation:none}
+  }
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+.punch.lead b{inset-inline-start:-3px;transform:none}
+.punch.trail b{inset-inline-start:auto;inset-inline-end:-3px;transform:none}
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true" focusable="false"><filter id="ink" x="-6%" y="-22%" width="112%" height="144%"><feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="3" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+<a class="skip" href="#main">Skip to content</a>
+<div class="sheet">
+<div class="rail" aria-hidden="true"></div>
+<div class="body">
+
+<div class="bar">
+<svg class="mark" viewBox="0 0 64 64" role="img" aria-label="itworks mark"><rect width="64" height="64" rx="14" fill="#041d23"/><rect x="14" y="26" width="10" height="24" rx="2" fill="#eff6f6"/><circle cx="19" cy="16.5" r="5.5" fill="#c6f01a"/><rect x="34" y="12" width="10" height="38" rx="2" fill="#eff6f6"/><rect x="28" y="26" width="22" height="8" rx="2" fill="#eff6f6"/></svg>
+<a class="bar-id" href="index.html">itworks<i>.</i>build</a>
+<nav class="bar-nav" aria-label="Main">
+<a href="index.html">the sheet</a>
+<a href="wall.html" aria-current="page">the card file</a>
+</nav>
+<span class="bar-serial num">FORM IW&#8209;01 &#183; REV 2026.09</span>
+</div>
+
+<main id="main">
+
+<section class="plate" aria-labelledby="h-wall" style="border-block-start:0">
+<div class="plate-head">
+<div>
+<p class="lab">File IW &#183; the card file</p>
+<h2 class="h" id="h-wall">The drawer, with cards in it.</h2>
+</div>
+<p class="pl-no">FILE IW &#183; 3 CARDS &#183; SPECIMEN</p>
+</div>
+<p class="note">These three cards are fictional specimens printed to show the ruled layout. Found equals fixed plus accepted plus still open on every card, including the red one.</p>
+</section>
+<div class="file">
+<div class="filerow filehead" aria-hidden="true">
+<div>App &#183; source</div>
+<div>What it does</div>
+<div>Audit</div>
+<div class="n">Found</div>
+<div class="n">Fixed</div>
+<div class="n">Accept</div>
+<div class="n">Crit open</div>
+<div class="n">Crit acc</div>
+</div>
+<article class="card">
+<div class="tab">
+<span class="tab-lab"><b class="num">IW-0001</b> filed 2026-09-11</span>
+<span class="state">state: current</span>
+<span class="stamp ok sm">Passed</span>
+</div>
+<div class="filerow data">
+<div><h3 class="cname"><a href="#sawhorse-cli" id="sawhorse-cli">sawhorse-cli</a></h3><p class="csrc">github.com/example-co/sawhorse-cli</p></div>
+<div><p class="cwhat">Scaffolds a project from a folder of plain text notes.</p></div>
+<div class="cwhen"><b>Punched</b><span class="num">2026-09-11</span><br><span class="num">day 6</span></div>
+<div class="cn num"><span>Found</span>14</div>
+<div class="cn num"><span>Fixed</span>12</div>
+<div class="cn num"><span>Accepted</span>2</div>
+<div class="cn num zero"><span>Crit open</span>0</div>
+<div class="cn num zero"><span>Crit accepted</span>0</div>
+</div>
+<div class="strip">
+<div class="strip-scale">
+<div class="mini" aria-hidden="true"><span class="t30"></span><span class="pk" style="--d:6"></span></div>
+<p class="mini-cap">punched day 6 of 60 &#183; 6 days before the mark</p>
+</div>
+<svg class="badge" xmlns="http://www.w3.org/2000/svg" width="302" height="20" viewBox="0 0 302 20" role="img" aria-labelledby="bt20"><title id="bt20">Audit 2026-09-11, 0 critical, green</title><g shape-rendering="crispEdges"><rect width="302" height="20" fill="#1a7f37"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000000" opacity=".22"/></g><circle data-shape="disc" cx="121.0" cy="10" r="4.6" fill="#ffffff"/><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600"><text x="53.0" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86.0" lengthAdjust="spacingAndGlyphs">itworks.build</text><text x="138.0" y="14.2" fill="#ffffff" textLength="152.0" lengthAdjust="spacingAndGlyphs">2026-09-11 · 0 critical</text></g></svg>
+</div>
+</article>
+<article class="card">
+<div class="tab">
+<span class="tab-lab"><b class="num">IW-0002</b> filed 2026-07-24</span>
+<span class="state">state: stale, the audit is over 30 days old</span>
+<span class="stamp warn sm">Stale</span>
+</div>
+<div class="filerow data">
+<div><h3 class="cname"><a href="#plumbline-api" id="plumbline-api">plumbline-api</a></h3><p class="csrc">github.com/example-co/plumbline</p></div>
+<div><p class="cwhat">A small HTTP service that checks invoice totals against a ledger.</p></div>
+<div class="cwhen"><b>Punched</b><span class="num">2026-07-24</span><br><span class="num">day 55</span></div>
+<div class="cn num"><span>Found</span>31</div>
+<div class="cn num"><span>Fixed</span>23</div>
+<div class="cn num"><span>Accepted</span>8</div>
+<div class="cn num zero"><span>Crit open</span>0</div>
+<div class="cn num zero"><span>Crit accepted</span>1</div>
+</div>
+<div class="strip">
+<div class="strip-scale">
+<div class="mini" aria-hidden="true"><span class="t30"></span><span class="pk" style="--d:55"></span></div>
+<p class="mini-cap">punched day 55 of 60 &#183; 25 days past the mark</p>
+</div>
+<svg class="badge" xmlns="http://www.w3.org/2000/svg" width="355" height="20" viewBox="0 0 355 20" role="img" aria-labelledby="bt21"><title id="bt21">Audit 2026-07-24, stale, 0 critical, amber</title><g shape-rendering="crispEdges"><rect width="355" height="20" fill="#d29922"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000000" opacity=".22"/></g><path data-shape="diamond" d="M121.0 4.4 126.6 10 121.0 15.6 115.4 10Z" fill="#1f1f1f"/><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600"><text x="53.0" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86.0" lengthAdjust="spacingAndGlyphs">itworks.build</text><text x="138.0" y="14.2" fill="#1f1f1f" textLength="205.0" lengthAdjust="spacingAndGlyphs">2026-07-24 · 0 critical · stale</text></g></svg>
+</div>
+</article>
+<article class="card">
+<div class="tab">
+<span class="tab-lab"><b class="num">IW-0003</b> filed 2026-09-15</span>
+<span class="state">state: critical open, and it stays red until that finding is closed</span>
+<span class="stamp  sm">Critical</span>
+</div>
+<div class="filerow data">
+<div><h3 class="cname"><a href="#tin-whistle" id="tin-whistle">tin-whistle</a></h3><p class="csrc">source not published</p></div>
+<div><p class="cwhat">A desktop timer that writes each session to a local file.</p></div>
+<div class="cwhen"><b>Punched</b><span class="num">2026-09-15</span><br><span class="num">day 2</span></div>
+<div class="cn num"><span>Found</span>9</div>
+<div class="cn num"><span>Fixed</span>5</div>
+<div class="cn num"><span>Accepted</span>3</div>
+<div class="cn num hot"><span>Crit open</span>1</div>
+<div class="cn num zero"><span>Crit accepted</span>0</div>
+</div>
+<div class="strip">
+<div class="strip-scale">
+<div class="mini" aria-hidden="true"><span class="t30"></span><span class="pk" style="--d:2"></span></div>
+<p class="mini-cap">punched day 2 of 60 &#183; red on the date it was punched</p>
+</div>
+<svg class="badge" xmlns="http://www.w3.org/2000/svg" width="302" height="20" viewBox="0 0 302 20" role="img" aria-labelledby="bt22"><title id="bt22">Audit 2026-09-15, 1 critical, red</title><g shape-rendering="crispEdges"><rect width="302" height="20" fill="#b3261e"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000000" opacity=".22"/></g><path data-shape="triangle" d="M121.0 3.5 126.8 14.4 115.2 14.4Z" fill="#ffffff"/><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600"><text x="53.0" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86.0" lengthAdjust="spacingAndGlyphs">itworks.build</text><text x="138.0" y="14.2" fill="#ffffff" textLength="152.0" lengthAdjust="spacingAndGlyphs">2026-09-15 · 1 critical</text></g></svg>
+</div>
+</article>
+</div>
+<section class="plate">
+<div class="plate-head"><p class="lab">Specimen notice</p><p class="pl-no">END OF FILE</p></div>
+<p class="note">sawhorse-cli, plumbline-api and tin-whistle do not exist. They are printed here so the columns, the punch scale and the three stamps can be read against each other. The empty drawer is at <a href="wall.html">wall.html</a>.</p>
+</section>
+</main>
+
+<div class="perf" aria-hidden="true"></div>
+<footer class="stub">
+<p class="stub-lab"><span>Office copy &#183; detach and retain</span><span class="num">File IW &#183; Sheet 1 of 1</span></p>
+
+<div class="stub-grid">
+<section>
+<h2>Filed by</h2>
+<div class="stub-id"><svg class="mark" viewBox="0 0 64 64" role="img" aria-label="itworks mark"><rect width="64" height="64" rx="14" fill="#041d23"/><rect x="14" y="26" width="10" height="24" rx="2" fill="#eff6f6"/><circle cx="19" cy="16.5" r="5.5" fill="#c6f01a"/><rect x="34" y="12" width="10" height="38" rx="2" fill="#eff6f6"/><rect x="28" y="26" width="22" height="8" rx="2" fill="#eff6f6"/></svg><b>itworks<i>.</i>build</b></div>
+<p><b>Parallax Intelligence Partnership, LLC</b><br>Battle Creek, Michigan</p>
+<p class="mono"><a href="mailto:hello@parallaxintelligence.ai">hello@parallaxintelligence.ai</a></p>
+</section>
+
+<section>
+<h2>Offices of record</h2>
+<ul>
+<li><a href="https://parallaxintelligence.ai">parallaxintelligence.ai</a></li>
+<li><a href="https://parallaxintelligence.digital">parallaxintelligence.digital</a></li>
+<li><a href="https://www.linkedin.com/company/parallax-intelligence">linkedin.com/company/parallax-intelligence</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership">github.com/parallaxintelligencepartnership</a></li>
+</ul>
+</section>
+
+<section>
+<h2>The plugin</h2>
+<ul>
+<li class="mono"><a href="https://github.com/parallaxintelligencepartnership/itworks">github.com<wbr>/parallaxintelligencepartnership<wbr>/itworks</a></li>
+</ul>
+<h2 style="margin-block-start:14px">Machine readable</h2>
+<ul>
+<li class="mono"><a href="/api/entries.json">/api/entries.json</a></li>
+</ul>
+</section>
+
+<section>
+<h2>Terms of the record</h2>
+<p>Every entry is a closeout summary. The counts and the audit date are the entry. Nothing else leaves your machine.</p>
+</section>
+</div>
+
+<div class="stub-foot">
+<p class="say">This site never runs a model.</p>
+<p class="num">&#169; 2026 Parallax Intelligence Partnership, LLC &#183; Form IW&#8209;01 &#183; Rev 2026.09</p>
+</div>
+</footer>
+
+</div>
+</div>
+</body>
+</html>

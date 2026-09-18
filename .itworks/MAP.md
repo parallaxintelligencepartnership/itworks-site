@@ -12,16 +12,18 @@ One package: `go test ./internal/badge -run TestName`
 ## Layout
 | Path | What lives there |
 |---|---|
-| cmd/build/main.go | the renderer: flags, load, sort, write every output file |
-| cmd/build/view.go | the shape the templates and api/entries.json see |
+| cmd/build/main.go | the renderer: flags, load, sort, write every output file, plus sitemap.xml and robots.txt |
+| cmd/build/view.go | the shape the templates and api/entries.json see, the per page head (canonical, description) and the JSON-LD |
 | internal/entry/entry.go | the entry file contract: fields, limits, allowed values, error wording |
 | internal/entry/load.go | reads entries/*.json, takes the id from the file name, takes the approval date from the commit that added the file |
 | internal/badge/badge.go | SVG rendering and the green/amber/red rules |
-| web/templates/, web/static/ | html/template pages, one stylesheet, self hosted fonts; embedded via web/embed.go |
+| web/templates/ | the public notice board pages; base.html holds the head, the footer, the brand mark, the split flap, the column head and the register row, and every page template calls them |
+| web/static/ | one stylesheet (the notice system, no JavaScript on any page), self hosted fonts, embed.js for other sites; embedded via web/embed.go |
 | entries/ | the records: one JSON file per entry, added by pull request |
 | fixtures/ | a sample entry, used by the build tests |
 | .github/workflows/ | pages.yml builds and deploys; check.yml gates pull requests |
-| docs/SPEC.md, docs/DESIGN-NOTES.md | the written contract and the design decisions behind the Ledger look |
+| docs/SPEC.md, docs/DESIGN-NOTES.md | the written contract, and the design decisions behind the public notice board (round 3) |
+| docs/design/round3/notice/ | the mocks the build follows, and impl/ with the built pages at 1440 and 390 |
 
 ## Environment
 - GitHub Pages, repo under the parallaxintelligencepartnership org, Pages source set to GitHub Actions.

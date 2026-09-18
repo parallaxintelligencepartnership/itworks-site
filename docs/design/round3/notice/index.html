@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>itworks.build</title>
+<meta name="description" content="A public notice board of closeout audits. Every entry prints the audit date and the criticals still open.">
+<style>
+/* itworks.build / THE PUBLIC NOTICE - round 3 mock. No JavaScript. */
+@font-face{
+  font-family:"Archivo";
+  font-style:normal; font-weight:100 900; font-stretch:62% 125%;
+  font-display:swap;
+  src:url("../../../../web/static/fonts/archivo-latin-var.woff2") format("woff2");
+}
+@font-face{
+  font-family:"JetBrains Mono";
+  font-style:normal; font-weight:400 700;
+  font-display:swap;
+  src:url("../../../../web/static/fonts/jetbrainsmono-latin-var.woff2") format("woff2");
+}
+
+:root{
+  color-scheme:light;
+
+  /* the bill: posted stock, printed in one ink, stamped in two */
+  --stock:      #e9e4d6;
+  --stock-2:    #ddd7c4;
+  --stock-3:    #d2cbb5;
+  --board:      #16180f;
+  --board-2:    #0b0c06;
+  --ink:        #101208;
+  --ink-dim:    #4c4e3e;
+  --hair:       #a9a693;
+
+  /* stamps */
+  --acid:       #b4f000;
+  --flare:      #cf3611;
+  --sun:        #d29922;
+
+  /* badge plates, fixed by contract */
+  --plate-green:#1a7f37;
+  --plate-amber:#d29922;
+  --plate-red:  #b3261e;
+
+  --gut: clamp(16px, 3vw, 64px);
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+
+*,*::before,*::after{ box-sizing:border-box; border-radius:0; }
+html,body{ overflow-x:clip; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--stock);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-variation-settings:"wdth" 100,"wght" 430;
+  font-size:clamp(15px,.42vw + 13.7px,18px);
+  line-height:1.4;
+  font-synthesis-weight:none;
+  text-rendering:optimizeLegibility;
+  /* paper fiber: two hairline passes, drawn not imaged */
+  background-image:
+    repeating-linear-gradient(90deg, rgba(16,18,8,.035) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(16,18,8,.022) 0 1px, transparent 1px 5px);
+}
+h1,h2,h3,p,ul,ol,figure,dl,dd{ margin:0; padding:0; }
+li{ list-style:none; }
+img,svg{ max-inline-size:100%; }
+a{ color:inherit; text-underline-offset:3px; text-decoration-thickness:1px; }
+a:focus-visible,button:focus-visible{ outline:3px solid var(--flare); outline-offset:2px; }
+
+.num{ font-variant-numeric:tabular-nums lining-nums; font-feature-settings:"tnum" 1; }
+.bleed{ padding-inline:var(--gut); }
+.skip{ position:absolute; inset-inline-start:-9999px; top:0; z-index:99;
+  background:var(--acid); color:var(--ink); font-family:var(--mono); font-size:12px; padding:10px 16px; }
+.skip:focus{ inset-inline-start:0; }
+
+/* headline voice: municipal condensed, set enormous and tight */
+.head{
+  font-variation-settings:"wdth" 80,"wght" 880;
+  text-transform:uppercase;
+  letter-spacing:-.022em;
+  line-height:.88;
+  overflow-wrap:break-word;
+}
+.h1{ font-size:clamp(2.6rem,10.2vw,7.4rem); }
+.h2{ font-size:clamp(2.1rem,7.2vw,5.2rem); }
+.h3{ font-size:clamp(1.35rem,3.1vw,2.2rem); font-variation-settings:"wdth" 86,"wght" 840; }
+
+/* the date line of a posted bill */
+.dateline{
+  display:flex; flex-wrap:wrap; gap:6px 22px; align-items:baseline;
+  font-family:var(--mono); font-size:clamp(10.5px,1.05vw,13px);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-dim);
+  padding-block:10px;
+}
+.dateline b{ color:var(--ink); font-weight:700; }
+.rule-heavy{ border-top:6px solid var(--ink); }
+.rule-hair{ border-top:1px solid var(--hair); }
+
+/* ============================ POSTING BAR ============================== */
+.bar{
+  position:sticky; top:0; z-index:60;
+  background:var(--board); color:var(--stock);
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px;
+  min-block-size:40px; padding-block:7px;
+  border-bottom:3px solid var(--acid);
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+}
+.bar .mark{ display:block; inline-size:26px; block-size:26px; }
+.bar a{ text-decoration:none; }
+.bar a:hover{ text-decoration:underline; }
+.bar-id{ font-weight:700; letter-spacing:.02em; text-transform:none; font-size:13px; }
+.bar-id i{ color:var(--acid); font-style:normal; }
+.bar-sep{ flex:1 1 auto; min-inline-size:0; color:#8d9079; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.bar-nav{ display:flex; gap:16px; }
+.bar-nav .on{ color:var(--acid); }
+
+/* ============================== THE NOTICE ============================= */
+.notice{ padding-block:clamp(18px,2.4vw,34px) clamp(34px,5vw,74px); }
+.wordmark{
+  font-variation-settings:"wdth" 118,"wght" 860;
+  letter-spacing:-.045em; line-height:.8; white-space:nowrap;
+  font-size:min(calc((100vw - 2 * var(--gut) - 4px) / 7.18), 12.4rem);
+  padding-block:clamp(10px,1.6vw,22px) clamp(8px,1.2vw,16px);
+  text-transform:none;
+  /* misregistered second pass, the way a screen print slips */
+  text-shadow:.055em .045em 0 var(--acid);
+}
+.wordmark .dot{ color:var(--flare); }
+
+.claim{ margin-top:clamp(16px,2.4vw,30px); display:grid; gap:0; }
+.claim .l1{ font-size:clamp(2rem,7.4vw,5.6rem); }
+.claim .l2{
+  font-size:clamp(2rem,7.4vw,5.6rem);
+  background:var(--ink); color:var(--stock);
+  padding:.08em .16em .12em; justify-self:start; max-inline-size:100%;
+}
+
+.posted{
+  margin-top:clamp(26px,3.4vw,44px);
+  display:grid; gap:clamp(16px,2.2vw,30px);
+  border-top:1px solid var(--hair); padding-top:clamp(16px,2vw,26px);
+}
+.posted .cap{ font-family:var(--mono); font-size:11.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:9px; }
+.posted p.sub{ max-inline-size:38ch; color:var(--ink-dim); }
+@media (min-width:900px){
+  .posted{ grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:start; }
+}
+
+/* the badge, posted */
+.plate{ display:block; inline-size:min(100%,368px); block-size:auto; }
+.plate-frame{ display:block; padding:12px; background:var(--stock-2); border:1px solid var(--hair); inline-size:min(100%,392px); }
+.pin{ inline-size:9px; block-size:9px; background:var(--flare); display:inline-block; clip-path:circle(50%); }
+
+/* ============================== THE BOARD ============================== */
+.board-sec{
+  background:var(--board); color:var(--stock);
+  padding-block:clamp(30px,4.4vw,68px);
+  border-block:6px solid var(--ink);
+}
+.board-sec .head{ color:var(--stock); }
+.board-sec .dateline{ color:#90937c; }
+.board-sec .dateline b{ color:var(--acid); }
+.board-sec .rule-hair{ border-top-color:#3a3d2c; }
+
+.brow{
+  display:grid; gap:12px clamp(14px,2vw,34px);
+  grid-template-columns:minmax(0,1fr);
+  padding-block:clamp(16px,2vw,26px);
+  border-bottom:1px solid #3a3d2c;
+  align-items:center;
+}
+.bhead{
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:#90937c; padding-block:9px; border-bottom:1px solid #3a3d2c;
+  display:grid; gap:12px clamp(14px,2vw,34px); grid-template-columns:minmax(0,1fr);
+}
+.bhead span{ display:none; }
+.bhead span:first-child{ display:block; }
+.bnote{ color:#c3c5ae; font-size:clamp(.92rem,1.2vw,1.05rem); max-inline-size:42ch; }
+.bnote b{ color:var(--stock); font-variation-settings:"wdth" 92,"wght" 760; font-weight:400; }
+@media (min-width:1180px){
+  .brow, .bhead{ grid-template-columns:minmax(0,26rem) minmax(0,368px) minmax(0,1fr); }
+  .bhead span{ display:block; }
+}
+
+/* split flap cells */
+.flap{ display:flex; flex-wrap:wrap; gap:3px; perspective:420px; }
+.flap b{
+  position:relative; display:grid; place-items:center;
+  inline-size:1.06em; block-size:1.5em;
+  background:var(--board-2); color:var(--stock);
+  font-size:clamp(14px,2.2vw,26px);
+  font-variation-settings:"wdth" 88,"wght" 800; font-weight:400;
+  line-height:1; text-transform:uppercase;
+  box-shadow:inset 0 0 0 1px #2b2e1f;
+  background-image:
+    radial-gradient(circle at 0 50%, #2b2e1f 0 1.6px, transparent 1.7px),
+    radial-gradient(circle at 100% 50%, #2b2e1f 0 1.6px, transparent 1.7px);
+}
+.flap b::after{ content:""; position:absolute; inset-inline:0; top:50%; block-size:1px; background:#e9e4d6; opacity:.34; }
+.flap b.sp{ background:transparent; box-shadow:none; background-image:none; inline-size:.4em; }
+.flap b.sp::after{ display:none; }
+.flap.f-cur b{ color:#6ee08f; }
+.flap.f-stale b{ color:var(--sun); }
+.flap.f-crit b{ color:#ff7a5e; }
+
+@media (prefers-reduced-motion:no-preference){
+  .flap b{ animation:flapin .34s cubic-bezier(.2,.8,.3,1) both; transform-origin:50% 50%; }
+  .flap b:nth-child(1){ animation-delay:.02s } .flap b:nth-child(2){ animation-delay:.06s }
+  .flap b:nth-child(3){ animation-delay:.10s } .flap b:nth-child(4){ animation-delay:.14s }
+  .flap b:nth-child(5){ animation-delay:.18s } .flap b:nth-child(6){ animation-delay:.22s }
+  .flap b:nth-child(7){ animation-delay:.26s } .flap b:nth-child(8){ animation-delay:.30s }
+  .flap b:nth-child(9){ animation-delay:.34s } .flap b:nth-child(10){ animation-delay:.38s }
+  .flap b:nth-child(11){ animation-delay:.42s } .flap b:nth-child(12){ animation-delay:.46s }
+  .flap b:nth-child(13){ animation-delay:.50s } .flap b:nth-child(14){ animation-delay:.54s }
+  @keyframes flapin{ from{ transform:rotateX(-92deg) } to{ transform:rotateX(0) } }
+}
+
+/* ============================== DAY RULER ============================== */
+.ruler-sec{ padding-block:clamp(30px,4.4vw,68px); background:var(--stock-2); border-bottom:6px solid var(--ink); }
+.ruler{ margin-top:clamp(22px,3vw,40px); position:relative; }
+.ruler .zones{ display:flex; block-size:clamp(34px,4.4vw,52px); border:1px solid var(--ink); }
+.zones .z{
+  display:flex; align-items:center; padding-inline:10px; min-inline-size:0;
+  font-family:var(--mono); font-size:clamp(9.5px,1vw,12px); letter-spacing:.08em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden;
+}
+.zones .z-green{ flex:30 1 0; background:var(--plate-green); color:#fff; }
+.zones .z-amber{ flex:30 1 0; background:var(--plate-amber); color:#1f1f1f; border-inline-start:3px solid var(--ink); }
+.zones .z .lg{ display:none; }
+@media (min-width:620px){ .zones .z .lg{ display:inline; } .zones .z .sm{ display:none; } }
+.ruler .ticks{
+  block-size:16px; border-inline:1px solid var(--ink); border-bottom:1px solid var(--ink);
+  background-image:
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px calc(100% / 60)),
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px calc(100% / 6));
+  background-size:100% 7px,100% 16px; background-repeat:no-repeat; background-position:0 0,0 0;
+}
+.ruler .axis{ position:relative; block-size:22px; margin-top:4px; }
+.ruler .axis li{
+  position:absolute; top:0; transform:translateX(-50%);
+  font-family:var(--mono); font-size:clamp(10px,1vw,12.5px); color:var(--ink-dim);
+}
+.ruler .axis li.mark{ color:var(--ink); font-weight:700; }
+.ruler .axis li.mark::before{ content:"\25b2"; display:block; font-size:8px; line-height:1; margin-bottom:2px; color:var(--sun); }
+.d0{ left:0; transform:translateX(0) !important; }
+.d60{ left:100%; transform:translateX(-100%) !important; }
+.d10{ left:16.666% } .d20{ left:33.333% } .d30{ left:50% } .d40{ left:66.666% } .d50{ left:83.333% }
+
+.two-up{ margin-top:clamp(22px,3vw,38px); display:grid; gap:clamp(16px,2.2vw,30px); }
+@media (min-width:760px){ .two-up{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.two-up .cap{ font-family:var(--mono); font-size:11.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:9px; }
+.override{
+  margin-top:clamp(20px,2.6vw,34px); border-top:3px solid var(--flare); padding-top:14px;
+  display:grid; gap:12px clamp(16px,2.2vw,30px);
+}
+.override .big{ font-variation-settings:"wdth" 84,"wght" 850; text-transform:uppercase; font-size:clamp(1.15rem,2.6vw,1.9rem); line-height:1; color:var(--flare); }
+@media (min-width:760px){ .override{ grid-template-columns:minmax(0,auto) minmax(0,1fr); align-items:center; } }
+
+/* ============================ TEAR OFF TABS ============================ */
+.tear-sec{ padding-block:clamp(30px,4.4vw,68px); position:relative; }
+.tear-sec::before{
+  content:""; position:absolute; inset-inline:0; top:-7px; block-size:8px; background:var(--stock);
+  clip-path:polygon(0 100%,0 42%,4% 66%,9% 26%,14% 70%,19% 34%,26% 72%,33% 30%,39% 68%,46% 26%,53% 70%,60% 33%,67% 72%,74% 28%,81% 66%,88% 32%,94% 70%,100% 38%,100% 100%);
+}
+.tabs{
+  margin-top:clamp(20px,2.8vw,36px);
+  border:1px solid var(--ink); border-top:3px dashed var(--ink);
+  display:grid; grid-template-columns:minmax(0,1fr);
+}
+.tab{ padding:clamp(14px,2vw,22px) clamp(12px,1.6vw,20px); min-inline-size:0; }
+.tab + .tab{ border-top:1px dashed var(--ink); }
+.tab .n{ font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--ink-dim); text-transform:uppercase; display:block; margin-bottom:9px; }
+.tab code{
+  font-family:var(--mono); display:block;
+  font-size:clamp(11.5px,1.32vw,15px); line-height:1.45;
+  overflow-wrap:break-word; word-break:break-word;
+  background:var(--acid); color:var(--ink); padding:9px 10px; border:1px solid var(--ink);
+}
+@media (min-width:900px){
+  .tabs{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .tab + .tab{ border-top:0; border-inline-start:1px dashed var(--ink); }
+}
+
+/* ============================== REGISTER =============================== */
+.reg-sec{ padding-block:clamp(30px,4.4vw,68px); background:var(--stock-3); border-block:6px solid var(--ink); }
+.reg{ margin-top:clamp(20px,2.8vw,36px); border-top:1px solid var(--ink); counter-reset:f; }
+.reg li{
+  counter-increment:f;
+  display:grid; grid-template-columns:3.2rem minmax(0,1fr); gap:12px; align-items:baseline;
+  padding-block:clamp(7px,.9vw,12px); border-bottom:1px solid var(--hair);
+  font-variation-settings:"wdth" 84,"wght" 780; text-transform:uppercase;
+  font-size:clamp(1.05rem,2.5vw,1.8rem); line-height:1;
+}
+.reg li::before{ content:counter(f,decimal-leading-zero); font-family:var(--mono); font-size:11.5px; color:var(--flare); font-variation-settings:normal; text-transform:none; }
+.stamp-wrap{ margin-top:clamp(24px,3.2vw,44px); display:grid; gap:clamp(16px,2.2vw,30px); align-items:center; }
+@media (min-width:900px){ .stamp-wrap{ grid-template-columns:minmax(0,1fr) minmax(0,auto) } }
+.stamp-wrap .big{ font-variation-settings:"wdth" 80,"wght" 880; text-transform:uppercase; letter-spacing:-.02em; line-height:.9; font-size:clamp(1.7rem,5.4vw,3.6rem); }
+.stamp{
+  border:3px solid var(--flare); color:var(--flare);
+  padding:12px 16px; rotate:-2.4deg; justify-self:start;
+  font-family:var(--mono); font-size:clamp(11px,1.25vw,14px); letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+  line-height:1.3; text-align:center; background:transparent;
+}
+.stamp i{ display:block; font-style:normal; font-size:.72em; letter-spacing:.2em; opacity:.85; }
+
+/* =============================== FOOTER ================================ */
+.foot{ background:var(--board); color:#c3c5ae; padding-block:clamp(30px,4vw,60px); border-top:6px solid var(--acid); }
+.foot a{ color:var(--stock); text-decoration:none; border-bottom:1px solid #4a4d38; }
+.foot a:hover{ border-bottom-color:var(--acid); color:var(--acid); }
+.foot-grid{ display:grid; gap:clamp(24px,3vw,40px); }
+@media (min-width:760px){ .foot-grid{ grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr)); } }
+.foot h3{ font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:#8d9079; margin-bottom:12px; font-variation-settings:normal; }
+.foot li{ padding-block:4px; overflow-wrap:break-word; }
+.foot .id{ display:flex; align-items:center; gap:12px; }
+.foot .id svg{ inline-size:34px; block-size:34px; flex:none; }
+.foot .id b{ font-variation-settings:"wdth" 112,"wght" 820; font-weight:400; font-size:1.3rem; color:var(--stock); letter-spacing:-.02em; }
+.foot .id b i{ color:var(--acid); font-style:normal; }
+.foot .never{ margin-top:14px; color:var(--stock); font-variation-settings:"wdth" 88,"wght" 780; text-transform:uppercase; font-size:clamp(1rem,1.7vw,1.35rem); line-height:1.05; }
+.foot .addr{ margin-top:12px; font-style:normal; color:#8d9079; line-height:1.55; }
+.foot-base{
+  margin-top:clamp(24px,3vw,40px); padding-top:16px; border-top:1px solid #3a3d2c;
+  display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between;
+  font-family:var(--mono); font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:#8d9079;
+}
+
+/* =============================== THE WALL ============================== */
+.wall-sec{ padding-block:clamp(26px,3.4vw,52px) clamp(34px,5vw,80px); }
+.colhead{
+  display:none; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-dim); padding-block:9px; border-block:1px solid var(--ink); margin-top:clamp(18px,2.4vw,30px);
+}
+.entry{
+  display:grid; gap:14px clamp(12px,1.4vw,22px); grid-template-columns:minmax(0,1fr);
+  padding-block:clamp(18px,2.2vw,28px); border-bottom:1px solid var(--hair);
+  align-items:start;
+}
+.entry .no{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; color:var(--flare); }
+.entry .name{ font-variation-settings:"wdth" 84,"wght" 860; text-transform:uppercase; letter-spacing:-.02em; line-height:.95; font-size:clamp(1.5rem,4.4vw,2.6rem); overflow-wrap:break-word; }
+.entry .sum{ color:var(--ink-dim); margin-top:7px; max-inline-size:44ch; }
+.entry .src{ font-family:var(--mono); font-size:11.5px; color:var(--ink-dim); margin-top:7px; overflow-wrap:break-word; }
+.counts{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; border-top:1px solid var(--hair); padding-top:10px; }
+.counts .c{ min-inline-size:0; }
+.counts .k{ display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-dim); }
+.counts .v{ display:block; font-variation-settings:"wdth" 96,"wght" 820; font-size:clamp(1.5rem,4vw,2.3rem); line-height:1; }
+.counts .c-crit .v{ color:var(--flare); }
+.counts .c-zero .v{ color:var(--ink); }
+.counts .note{ font-family:var(--mono); font-size:9.5px; color:var(--ink-dim); display:block; margin-top:3px; }
+.entry .state{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-dim); margin-top:8px; display:block; }
+.minirule{ position:relative; display:block; block-size:14px; margin-top:12px; border:1px solid var(--ink);
+  background-image:repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px calc(100% / 12)); }
+.minirule::before{ content:""; position:absolute; inset-block:0; left:50%; inline-size:2px; background:var(--sun); }
+.minirule .pip{ position:absolute; inset-block:-3px; inline-size:4px; background:var(--flare); left:calc(var(--d) / 60 * 100%); }
+@media (min-width:1000px){
+  .colhead{ display:grid; grid-template-columns:3.4rem minmax(0,2.1fr) minmax(0,1.1fr) 4.4rem 4.4rem 5rem 5.2rem minmax(0,368px); gap:clamp(12px,1.4vw,22px); }
+  .entry{ grid-template-columns:3.4rem minmax(0,2.1fr) minmax(0,1.1fr) 4.4rem 4.4rem 5rem 5.2rem minmax(0,368px); }
+  .counts{ display:contents; }
+  .counts .c{ border-top:0; padding-top:0; }
+  .counts .k{ font-size:0; }
+}
+.audit{ font-family:var(--mono); font-size:12.5px; color:var(--ink); }
+.audit b{ display:block; font-weight:400; color:var(--ink-dim); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; margin-bottom:4px; }
+
+/* empty board */
+.blankboard{ background:var(--board); padding:clamp(16px,2.2vw,26px); margin-top:clamp(20px,2.6vw,34px); border:6px solid var(--ink); }
+.blankboard .cap{ font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8d9079; margin-bottom:12px; }
+.blankrow{ display:grid; grid-template-columns:repeat(auto-fill,minmax(clamp(15px,3.1vw,30px),1fr)); gap:3px; margin-bottom:3px;
+  block-size:clamp(22px,4.6vw,44px); overflow:hidden; }
+.blankrow b{ display:block; block-size:clamp(22px,4.6vw,44px); background:var(--board-2);
+  box-shadow:inset 0 0 0 1px #2b2e1f; position:relative;
+  background-image:
+    radial-gradient(circle at 0 50%, #2b2e1f 0 1.6px, transparent 1.7px),
+    radial-gradient(circle at 100% 50%, #2b2e1f 0 1.6px, transparent 1.7px); }
+.blankrow b::after{ content:""; position:absolute; inset-inline:0; top:50%; block-size:1px; background:#e9e4d6; opacity:.22; }
+
+.slot{
+  margin-top:clamp(20px,2.6vw,34px); position:relative;
+  border:2px dashed var(--ink); padding:clamp(22px,4vw,54px) clamp(16px,2.4vw,34px);
+  background:
+    repeating-linear-gradient(135deg, rgba(16,18,8,.045) 0 2px, transparent 2px 9px);
+}
+.slot .pin{ position:absolute; inline-size:11px; block-size:11px; }
+.slot .p1{ top:9px; left:9px } .slot .p2{ top:9px; right:9px } .slot .p3{ bottom:9px; left:9px } .slot .p4{ bottom:9px; right:9px }
+.slot .lab{ font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); }
+.slot .big{ font-variation-settings:"wdth" 80,"wght" 880; text-transform:uppercase; line-height:.9; letter-spacing:-.02em;
+  font-size:clamp(1.7rem,6vw,4rem); margin-top:12px; }
+.slot .sub{ color:var(--ink-dim); margin-top:14px; max-inline-size:46ch; }
+.ghost{ margin-top:clamp(18px,2.4vw,28px); display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:10px;
+  border-top:1px solid var(--hair); padding-top:12px; }
+.ghost .c{ min-inline-size:0; }
+.ghost .k{ display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-dim); }
+.ghost .v{ display:block; font-variation-settings:"wdth" 96,"wght" 820; font-size:clamp(1.4rem,3.4vw,2rem); line-height:1; color:var(--hair); }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="bar bleed">
+<svg class="mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="14" fill="#041d23"/><rect x="14" y="26" width="10" height="24" rx="2" fill="#eff6f6"/><circle cx="19" cy="16.5" r="5.5" fill="#c6f01a"/><rect x="34" y="12" width="10" height="38" rx="2" fill="#eff6f6"/><rect x="28" y="26" width="22" height="8" rx="2" fill="#eff6f6"/></svg>
+<a class="bar-id" href="index.html" class="on">itworks<i>.</i>build</a>
+<span class="bar-sep">Public notice board</span>
+<nav class="bar-nav" aria-label="Main"><a href="wall.html">The wall</a><a href="index.html#published">Published</a></nav>
+</div>
+<main id="main">
+
+<section class="notice bleed">
+<div class="rule-heavy"></div>
+<p class="dateline"><span>Notice no. <b class="num">001</b></span><span>Posted <b class="num">2026-09-17</b></span><span>Post until further notice</span><span>Read it before you trust it</span></p>
+<div class="rule-hair"></div>
+
+<h1 class="wordmark">itworks<span class="dot">.</span>build</h1>
+
+<div class="claim">
+<p class="head l1">Anyone can say it works.</p>
+<p class="head l2">This wall prints the receipt.</p>
+</div>
+
+<div class="posted">
+<div>
+<p class="cap">The notice, as posted</p>
+<span class="plate-frame"><svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-m1"><title id="bt-m1">Example badge: green, audit 2026-09-17, 0 critical open</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#1a7f37"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><circle cx="121" cy="10" r="4.6" fill="#ffffff"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#ffffff" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-09-17 · 0 critical</text></svg></span>
+</div>
+<div>
+<p class="cap">What this board is</p>
+<p class="sub">Every entry is a closeout summary: the audit date, and the count of findings found, fixed, accepted, and criticals still open. One badge per entry, posted at the same size for everyone.</p>
+<p class="sub" style="margin-top:12px">The badge is not a logo. It is the notice.</p>
+</div>
+</div>
+</section>
+
+<section class="board-sec bleed" aria-labelledby="board-h">
+<p class="dateline"><span>Board <b>A</b></span><span>Three states, no others</span></p>
+<h2 class="head h2" id="board-h">The flaps say it out loud.</h2>
+
+<div class="bhead"><span>State</span><span>The plate</span><span>When it reads that way</span></div>
+
+<div class="brow">
+<span class="flap f-cur" role="img" aria-label="CURRENT"><b>C</b><b>U</b><b>R</b><b>R</b><b>E</b><b>N</b><b>T</b></span>
+<svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-b1"><title id="bt-b1">Green badge: audit 2026-09-17, 0 critical open</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#1a7f37"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><circle cx="121" cy="10" r="4.6" fill="#ffffff"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#ffffff" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-09-17 · 0 critical</text></svg>
+<p class="bnote"><b>Audited inside 30 days, nothing critical open.</b> The plate stays green until one of those two stops being true.</p>
+</div>
+
+<div class="brow">
+<span class="flap f-stale" role="img" aria-label="STALE"><b>S</b><b>T</b><b>A</b><b>L</b><b>E</b></span>
+<svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-b2"><title id="bt-b2">Amber badge: audit 2026-07-28, 0 critical open, stale</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#d29922"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><path d="M121 4.6 L126.4 10 L121 15.4 L115.6 10 Z" fill="#1f1f1f"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#1f1f1f" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-07-28 · 0 critical · stale</text></svg>
+<p class="bnote"><b>Day 30 turns the flap.</b> The word stale is printed inside the plate, so the state survives a grayscale screen.</p>
+</div>
+
+<div class="brow">
+<span class="flap f-crit" role="img" aria-label="CRITICAL OPEN"><b>C</b><b>R</b><b>I</b><b>T</b><b>I</b><b>C</b><b>A</b><b>L</b><b class="sp" aria-hidden="true"></b><b>O</b><b>P</b><b>E</b><b>N</b></span>
+<svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-b3"><title id="bt-b3">Red badge: audit 2026-09-16, 1 critical open</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#b3261e"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><path d="M121 4.8 L126.6 15.2 L115.4 15.2 Z" fill="#ffffff"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#ffffff" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-09-16 · 1 critical open</text></svg>
+<p class="bnote"><b>Red on day one if it has to be.</b> One open critical beats a fresh audit date, and it stays red until that finding is closed.</p>
+</div>
+</section>
+
+<section class="ruler-sec bleed" aria-labelledby="ruler-h">
+<p class="dateline"><span>Board <b>B</b></span><span>Posted term, 60 days</span></p>
+<h2 class="head h2" id="ruler-h">A notice has an expiry.</h2>
+
+<div class="ruler">
+<div class="zones">
+<span class="z z-green"><span class="lg">Day 0 to 29 &middot; green</span><span class="sm">Day 0 to 29</span></span>
+<span class="z z-amber"><span class="lg">Day 30 and after &middot; amber, stale</span><span class="sm">Day 30+ &middot; stale</span></span>
+</div>
+<div class="ticks" aria-hidden="true"></div>
+<ol class="axis num" aria-hidden="true">
+<li class="d0">0</li><li class="d10">10</li><li class="d20">20</li>
+<li class="d30 mark">30</li><li class="d40">40</li><li class="d50">50</li><li class="d60">60</li>
+</ol>
+</div>
+
+<div class="two-up">
+<div>
+<p class="cap">Day 0, the day it was audited</p>
+<svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-r1"><title id="bt-r1">Green badge at day 0</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#1a7f37"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><circle cx="121" cy="10" r="4.6" fill="#ffffff"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#ffffff" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-09-17 · 0 critical</text></svg>
+</div>
+<div>
+<p class="cap">Day 30, same entry, nothing changed but time</p>
+<svg class="plate" viewBox="0 0 368 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="bt-r2"><title id="bt-r2">Amber badge at day 30</title><g shape-rendering="crispEdges"><rect width="368" height="20" fill="#d29922"/><rect width="106" height="20" fill="#1f1f1f"/><rect x="106" width="1" height="20" fill="#000" opacity=".22"/></g><path d="M121 4.6 L126.4 10 L121 15.4 L115.6 10 Z" fill="#1f1f1f"/><text x="53" y="14.2" fill="#ffffff" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">itworks.build</text><text x="132" y="14.2" fill="#1f1f1f" textLength="218" lengthAdjust="spacingAndGlyphs" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5">example · 2026-08-18 · 0 critical · stale</text></svg>
+</div>
+</div>
+
+<div class="override">
+<p class="big">The calendar is only half of it.</p>
+<p>An open critical takes the plate red on any day, including day one, and the ruler has nothing to say about it.</p>
+</div>
+</section>
+
+<section class="tear-sec bleed" aria-labelledby="install-h">
+<p class="dateline"><span>Tear one off</span><span>Two lines, in this order</span></p>
+<h2 class="head h2" id="install-h">Take a tab.</h2>
+
+<div class="tabs">
+<div class="tab">
+<span class="n">Tab 01 &middot; add the marketplace</span>
+<code>claude plugin marketplace add parallaxintelligencepartnership/itworks</code>
+</div>
+<div class="tab">
+<span class="n">Tab 02 &middot; install the plugin</span>
+<code>claude plugin install itworks@itworks</code>
+</div>
+</div>
+</section>
+
+<section class="reg-sec bleed" id="published" aria-labelledby="pub-h">
+<p class="dateline"><span>Schedule <b>1</b></span><span>The published register</span></p>
+<h2 class="head h2" id="pub-h">What gets published.</h2>
+
+<ol class="reg">
+<li>name</li><li>summary</li><li>source</li><li>audit</li>
+<li>found</li><li>fixed</li><li>accepted</li><li>criticals open</li><li>criticals accepted</li>
+</ol>
+
+<div class="stamp-wrap">
+<p class="big">Nothing else leaves your machine.</p>
+<p class="stamp">This site never runs a model<i>Parallax Intelligence Partnership</i></p>
+</div>
+</section>
+
+</main>
+<footer class="foot bleed">
+<div class="foot-grid">
+<div>
+<div class="id"><svg class="mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="14" fill="#041d23"/><rect x="14" y="26" width="10" height="24" rx="2" fill="#eff6f6"/><circle cx="19" cy="16.5" r="5.5" fill="#c6f01a"/><rect x="34" y="12" width="10" height="38" rx="2" fill="#eff6f6"/><rect x="28" y="26" width="22" height="8" rx="2" fill="#eff6f6"/></svg><b>itworks<i>.</i>build</b></div>
+<p class="never">This site never runs a model.</p>
+<address class="addr">Parallax Intelligence Partnership, LLC<br>Battle Creek, Michigan<br>
+<a href="mailto:hello@parallaxintelligence.ai">hello@parallaxintelligence.ai</a></address>
+</div>
+<div>
+<h3>The record</h3>
+<ul>
+<li><a href="wall.html">The wall</a></li>
+<li><a href="https://github.com/parallaxintelligencepartnership/itworks">The plugin repo</a></li>
+<li><a href="/api/entries.json">JSON feed, /api/entries.json</a></li>
+</ul>
+</div>
+<div>
+<h3>Parallax</h3>
+<ul>
+<li><a href="https://parallaxintelligence.ai">parallaxintelligence.ai</a></li>
+<li><a href="https://parallaxintelligence.digital">parallaxintelligence.digital</a></li>
+</ul>
+</div>
+<div>
+<h3>Elsewhere</h3>
+<ul>
+<li><a href="https://github.com/parallaxintelligencepartnership">GitHub</a></li>
+<li><a href="https://www.linkedin.com/company/parallax-intelligence">LinkedIn</a></li>
+</ul>
+</div>
+</div>
+<div class="foot-base">
+<span class="num">&copy; 2026 Parallax Intelligence Partnership, LLC</span>
+<span>Posted in Battle Creek, Michigan</span>
+<span class="num">Notice board 001</span>
+</div>
+</footer>
+</body>
+</html>
