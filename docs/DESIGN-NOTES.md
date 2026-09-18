@@ -38,7 +38,7 @@ in docs/design/round3/notice/impl/ at 1440 and at 390.
   audit date with a 60 day minirule, the four counts, the plate and the state in
   words. Empty is not an error: the board reads blank and slot 001 is ruled off
   with four pins in.
-- An entry page is one posted notice: notice number is the entry id, posted date
+- An entry page is one posted notice: notice number is the entry id, audited date
   is the audit date, the badge is shown as the notice with the markdown to copy,
   the figures are posted large, the term rule carries this entry's day, and the
   state word sits on the flaps. 404 is a torn, empty slot.

@@ -10,6 +10,7 @@
   var DEFAULT_FEED = "https://itworks.build/api/entries.json";
   var DEFAULT_LIMIT = 5;
   var STYLE_ID = "itw-wall-style";
+  var ID_RE = /^[a-z2-7]{12}$/;
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -49,28 +50,60 @@
     return e;
   }
 
+  // stateWord reads the state from the badge color alone, never a feed field.
+  function stateWord(color) {
+    if (color === "green") return "current";
+    if (color === "amber") return "stale";
+    if (color === "red") return "critical open";
+    return "";
+  }
+
+  // criticalText is the critical count as prose.
+  function criticalText(open, accepted) {
+    var t = open + " critical open";
+    if (accepted > 0) t += ", " + accepted + " accepted";
+    return t;
+  }
+
   function renderEntries(root, entries, builtAt) {
     root.textContent = "";
     var list = el("ol", "itw-wall");
 
     entries.forEach(function (entry) {
+      var id = entry && entry.id;
+      if (typeof id !== "string" || !ID_RE.test(id)) return;
+
+      var entryURL = "https://itworks.build/e/" + id + "/";
+      var badgeURL = "https://itworks.build/badge/" + id + ".svg";
+
+      var open = parseInt(entry.critical_open, 10);
+      if (isNaN(open)) open = 0;
+      var accepted = parseInt(entry.critical_accepted, 10);
+      if (isNaN(accepted)) accepted = 0;
+      var state = stateWord(entry.badge_color);
+      var critText = criticalText(open, accepted);
+
       var item = el("li", "itw-item");
 
       var badgeLink = el("a");
-      badgeLink.href = entry.entry_url;
+      badgeLink.setAttribute("href", entryURL);
       var badgeImg = el("img", "itw-badge");
-      badgeImg.src = entry.badge_url;
-      badgeImg.alt = entry.name + " audit badge";
+      badgeImg.setAttribute("src", badgeURL);
+      badgeImg.setAttribute("alt", "itworks badge: " + state + ", " + critText);
       badgeLink.appendChild(badgeImg);
       item.appendChild(badgeLink);
 
       var body = el("div", "itw-body");
       var nameLink = textEl("a", "itw-name", entry.name);
-      nameLink.href = entry.entry_url;
+      nameLink.setAttribute("href", entryURL);
       body.appendChild(nameLink);
       body.appendChild(textEl("p", "itw-summary", entry.summary));
       body.appendChild(
-        textEl("p", "itw-meta", entry.audit_tier + " · " + entry.audit_date)
+        textEl(
+          "p",
+          "itw-meta",
+          entry.audit_tier + " · " + entry.audit_date + " · " + state + ", " + critText
+        )
       );
 
       item.appendChild(body);

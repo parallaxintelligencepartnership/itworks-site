@@ -81,4 +81,5 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go test ./...
+      - run: node --test web/static/
       - run: go run ./cmd/build -check

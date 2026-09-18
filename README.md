@@ -63,6 +63,7 @@ Run the tests:
 
 ```
 go test ./...
+node --test web/static/
 ```
 
 Two more flags help when you are working on the badge: `-today 2026-01-31`

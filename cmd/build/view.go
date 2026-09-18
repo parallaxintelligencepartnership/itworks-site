@@ -281,7 +281,12 @@ const (
 // entryDescription is the description a crawler and a link preview get for
 // one posted notice: the name, the one line, and the two facts that date it.
 func entryDescription(e view) string {
-	d := fmt.Sprintf("%s: %s Audit %s, %d critical open.", e.Name, e.Summary, e.AuditDate, e.CriticalOpen)
+	var d string
+	if e.CriticalAccepted > 0 {
+		d = fmt.Sprintf("%s: %s Audit %s, %d critical open, %d critical accepted by the owner.", e.Name, e.Summary, e.AuditDate, e.CriticalOpen, e.CriticalAccepted)
+	} else {
+		d = fmt.Sprintf("%s: %s Audit %s, %d critical open.", e.Name, e.Summary, e.AuditDate, e.CriticalOpen)
+	}
 	return clip(d, 300)
 }
 

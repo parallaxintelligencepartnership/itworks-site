@@ -159,6 +159,11 @@ func TestBuildRemovesEntriesDeletedFromTheSource(t *testing.T) {
 	if strings.Contains(wall, "/e/"+fixtureID+"/") {
 		t.Fatalf("wall still links the removed entry's page:\n%s", wall)
 	}
+
+	sitemap := readFile(t, out, "sitemap.xml")
+	if strings.Contains(sitemap, "/e/"+fixtureID+"/") {
+		t.Fatalf("sitemap still lists the removed entry's page:\n%s", sitemap)
+	}
 }
 
 func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
@@ -398,6 +403,123 @@ func TestRepoLinksCarryRel(t *testing.T) {
 		if !strings.Contains(tag, `rel="nofollow noopener noreferrer"`) {
 			t.Fatalf("%v repo link has no rel: %s", page, tag)
 		}
+	}
+}
+
+// TestEntryDescriptionNamesAcceptedCriticals covers the description a
+// crawler and a link preview get: when criticals are accepted, not just
+// open, the description says both numbers rather than only one.
+func TestEntryDescriptionNamesAcceptedCriticals(t *testing.T) {
+	entries := []entry.Entry{{
+		ID: "acceptedonly1", Name: "Accepted Only", Summary: "no criticals open, two accepted",
+		Source: "closed", AuditTier: "audit", AuditDate: "2026-09-16",
+		Found: 3, Fixed: 1, Accepted: 2, CriticalOpen: 0, CriticalAccepted: 2,
+		ApprovedAt: time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC),
+	}}
+	out := t.TempDir()
+	if err := render(entries, out, time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	page := readFile(t, out, "e", "acceptedonly1", "index.html")
+	if !strings.Contains(page, `<meta name="description" content="`) {
+		t.Fatalf("entry page has no description meta")
+	}
+	i := strings.Index(page, `<meta name="description" content="`)
+	rest := page[i+len(`<meta name="description" content="`):]
+	desc := rest[:strings.Index(rest, `"`)]
+	if !strings.Contains(desc, "2 critical accepted") {
+		t.Fatalf("entry description does not mention accepted criticals: %q", desc)
+	}
+
+	j := strings.Index(page, `<meta property="og:description" content="`)
+	if j < 0 {
+		t.Fatalf("entry page has no og:description")
+	}
+	restJ := page[j+len(`<meta property="og:description" content="`):]
+	ogDesc := restJ[:strings.Index(restJ, `"`)]
+	if !strings.Contains(ogDesc, "2 critical accepted") {
+		t.Fatalf("entry og:description does not mention accepted criticals: %q", ogDesc)
+	}
+}
+
+// TestEntryPageFallsBackWhenRepoURLIsEmpty covers the notice for an entry
+// that never gave a repo link: the page says so instead of leaving a blank.
+func TestEntryPageFallsBackWhenRepoURLIsEmpty(t *testing.T) {
+	entries := []entry.Entry{{
+		ID: "norepourl001", Name: "No Repo URL", Summary: "never gave a repo link",
+		Source: "private", AuditTier: "audit", AuditDate: "2026-09-16",
+		Found: 1, Fixed: 1, ApprovedAt: time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC),
+	}}
+	out := t.TempDir()
+	if err := render(entries, out, time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	page := readFile(t, out, "e", "norepourl001", "index.html")
+	if !strings.Contains(page, "source not published") {
+		t.Fatalf("entry page does not fall back to \"source not published\":\n%s", page)
+	}
+}
+
+// TestEntryPageCarriesTheBadgeMarkdownSnippet covers the "post it
+// yourself" block: it hands the entry's own badge URL in the markdown a
+// README embeds.
+func TestEntryPageCarriesTheBadgeMarkdownSnippet(t *testing.T) {
+	entries := []entry.Entry{{
+		ID: "badgemdsnip1", Name: "Badge Markdown", Summary: "carries its own badge URL",
+		Source: "public", AuditTier: "audit", AuditDate: "2026-09-16",
+		Found: 1, Fixed: 1, ApprovedAt: time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC),
+	}}
+	out := t.TempDir()
+	if err := render(entries, out, time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	page := readFile(t, out, "e", "badgemdsnip1", "index.html")
+	want := "![audit badge](https://itworks.build/badge/badgemdsnip1.svg)"
+	if !strings.Contains(page, want) {
+		t.Fatalf("entry page is missing the badge markdown snippet %q:\n%s", want, page)
+	}
+}
+
+// TestEntryPageStateWordsAndClasses covers the state a reader gets on the
+// entry page itself: a critical open reads "critical open" in the f-crit
+// flap, and an audit past 30 days reads "stale" in the f-stale flap, with
+// no crossover between the two.
+func TestEntryPageStateWordsAndClasses(t *testing.T) {
+	today := time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)
+	entries := []entry.Entry{
+		{
+			ID: "criticalopen1", Name: "Critical Open Entry", Summary: "one critical still open",
+			Source: "public", AuditTier: "audit", AuditDate: "2026-09-16",
+			Found: 1, Fixed: 0, CriticalOpen: 1, ApprovedAt: today,
+		},
+		{
+			ID: "staleentry01", Name: "Stale Entry", Summary: "audited 40 days back",
+			Source: "public", AuditTier: "audit", AuditDate: "2026-08-07",
+			Found: 1, Fixed: 1, ApprovedAt: today,
+		},
+	}
+	out := t.TempDir()
+	if err := render(entries, out, today); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	critPage := readFile(t, out, "e", "criticalopen1", "index.html")
+	if !strings.Contains(critPage, "reads critical open") {
+		t.Fatalf("critical entry page does not read \"critical open\":\n%s", critPage)
+	}
+	if !strings.Contains(critPage, `class="flap f-crit"`) {
+		t.Fatalf("critical entry page does not carry the f-crit flap class:\n%s", critPage)
+	}
+
+	stalePage := readFile(t, out, "e", "staleentry01", "index.html")
+	if !strings.Contains(stalePage, "reads stale") {
+		t.Fatalf("stale entry page does not read \"stale\":\n%s", stalePage)
+	}
+	if !strings.Contains(stalePage, `class="flap f-stale"`) {
+		t.Fatalf("stale entry page does not carry the f-stale flap class:\n%s", stalePage)
 	}
 }
 
