@@ -7,7 +7,7 @@ Render against a fixed date: `go run ./cmd/build -out dist -today 2026-01-31`; r
 
 ## Test
 `go test ./...` (also `go vet ./...` and `gofmt -l .` before a checkpoint)
-`node --test web/static/`
+`node --test web/static/embed_test.mjs`
 One package: `go test ./internal/badge -run TestName`
 
 ## Layout
