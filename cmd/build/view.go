@@ -1,18 +1,35 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"html/template"
 	"math"
+	"strings"
 	"time"
 
 	"itworks.build/internal/badge"
 	"itworks.build/internal/entry"
 )
 
-// baseURL is where the built site is published. It only appears in the
-// values that have to work away from the site: the badge URL a README
-// embeds and the entry URL the JSON feed publishes. Everything inside a
-// page uses a root relative path so a local preview works too.
+// baseURL is where the built site is published. It appears in the values
+// that have to work away from the site (the badge URL a README embeds, the
+// entry URL the JSON feed publishes) and in the head of every page, which
+// has to name its own absolute address for a crawler. Everything else
+// inside a page uses a root relative path so a local preview works too.
 const baseURL = "https://itworks.build"
+
+// organization is the publisher of the board, named once here and used for
+// the footer copy, the JSON-LD, and nowhere else.
+const (
+	orgName    = "Parallax Intelligence Partnership, LLC"
+	orgURL     = "https://parallaxintelligence.ai"
+	orgEmail   = "hello@parallaxintelligence.ai"
+	orgCity    = "Battle Creek"
+	orgRegion  = "MI"
+	orgCountry = "US"
+	siteName   = "itworks.build"
+)
 
 // view is one entry as the templates and the JSON feed see it. The JSON
 // field set is the one the old API returned, plus critical_accepted.
@@ -38,10 +55,21 @@ type view struct {
 	// Paths are for markup inside the site and stay out of the feed.
 	BadgePath string `json:"-"`
 	EntryPath string `json:"-"`
+
+	// State is the entry's state in words, and Flap is the same word set
+	// in split flap cells. Both stay out of the feed: they are a reading
+	// of badge_color, not a field of the record.
+	State string `json:"-"`
+	Flap  flap   `json:"-"`
+
+	// ApprovedAt is the merge date of the pull request that added the
+	// entry file; the sitemap publishes it as lastmod.
+	ApprovedAt time.Time `json:"-"`
 }
 
 func toView(e entry.Entry, today time.Time) view {
 	auditDate, _ := time.Parse("2006-01-02", e.AuditDate)
+	color := badge.Color(auditDate, e.Critical(), today)
 	return view{
 		ID:               e.ID,
 		Name:             e.Name,
@@ -57,11 +85,14 @@ func toView(e entry.Entry, today time.Time) view {
 		CriticalAccepted: e.CriticalAccepted,
 		CriticalTotal:    e.CriticalOpen + e.CriticalAccepted,
 		AgeDays:          ageInDays(auditDate, today),
-		BadgeColor:       badge.Color(auditDate, e.Critical(), today),
+		BadgeColor:       color,
 		BadgeURL:         baseURL + "/badge/" + e.ID + ".svg",
 		EntryURL:         baseURL + "/e/" + e.ID + "/",
 		BadgePath:        "/badge/" + e.ID + ".svg",
 		EntryPath:        "/e/" + e.ID + "/",
+		State:            stateWords(color),
+		Flap:             stateFlap(color),
+		ApprovedAt:       e.ApprovedAt,
 	}
 }
 
@@ -71,33 +102,239 @@ func ageInDays(auditDate, now time.Time) int {
 	return int(math.Round(n.Sub(a).Hours() / 24))
 }
 
+// stateWords is the state a visitor reads, spelled out. The badge color is
+// never the only carrier of the state on a page.
+func stateWords(color string) string {
+	switch color {
+	case badge.ColorRed:
+		return "critical open"
+	case badge.ColorAmber:
+		return "stale, over 30 days"
+	default:
+		return "current"
+	}
+}
+
+// flap is a word on the departure board: one cell per letter, plus the
+// class that colors the cells and the label a screen reader is given
+// instead of the cells.
+type flap struct {
+	Class string
+	Label string
+	Cells []flapCell
+}
+
+// flapCell is one cell. A space in the word is a gap between cells, not a
+// cell with a space in it.
+type flapCell struct {
+	Char  string
+	Space bool
+}
+
+func stateFlap(color string) flap {
+	switch color {
+	case badge.ColorRed:
+		return newFlap("f-crit", "CRITICAL OPEN")
+	case badge.ColorAmber:
+		return newFlap("f-stale", "STALE")
+	default:
+		return newFlap("f-cur", "CURRENT")
+	}
+}
+
+func newFlap(class, word string) flap {
+	f := flap{Class: class, Label: word}
+	for _, r := range word {
+		if r == ' ' {
+			f.Cells = append(f.Cells, flapCell{Space: true})
+			continue
+		}
+		f.Cells = append(f.Cells, flapCell{Char: string(r)})
+	}
+	return f
+}
+
 // landingPreviewCount is how many entries the landing page shows in its
-// wall preview.
+// register preview.
 const landingPreviewCount = 3
 
+// meta is the head of a page: what it is called, what it says it is, and
+// where it lives. Every page data struct embeds it, so every page carries a
+// canonical URL, a description and the publisher's JSON-LD.
+type meta struct {
+	Title       string
+	Description string
+	Canonical   string
+	JSONLD      template.JS
+	// BuildDate is the day this copy of the site was rendered, printed on
+	// the notice header as the posted date.
+	BuildDate string
+	// Nav names the bar link that is current: "" or "wall".
+	Nav string
+}
+
 type landingData struct {
-	Title           string
-	InstallCommands []string
+	meta
+	NoticeNo        string
+	InstallCommands []installTab
 	Entries         []view
+	Rows            []row
+	States          []stateSpec
+	Published       []string
 }
 
 type wallData struct {
-	Title   string
-	Entries []view
+	meta
+	Rows []row
+}
+
+// row is one line of the register: the slot number the notice is posted
+// in, and the notice itself. The board is numbered from the top, so the
+// newest entry is 001.
+type row struct {
+	No    string
+	Entry view
+}
+
+func rows(views []view) []row {
+	out := make([]row, 0, len(views))
+	for i, v := range views {
+		out = append(out, row{No: fmt.Sprintf("%03d", i+1), Entry: v})
+	}
+	return out
 }
 
 type entryData struct {
-	Title string
+	meta
 	Entry view
 }
 
 type pageData struct {
-	Title string
+	meta
+}
+
+// stateSpec is one row of Board A on the landing page: the state word on
+// the flaps, the specimen plate, and the rule that puts an entry there.
+type stateSpec struct {
+	Flap      flap
+	BadgePath string
+	BadgeAlt  string
+	Lead      string
+	Rest      string
+}
+
+// boardStates is Board A, in the order a badge walks through them.
+var boardStates = []stateSpec{
+	{
+		Flap:      newFlap("f-cur", "CURRENT"),
+		BadgePath: "/badge/example-green.svg",
+		BadgeAlt:  "Example audit badge: green, audited today, 0 critical open",
+		Lead:      "Audited inside 30 days, nothing critical open.",
+		Rest:      "The plate stays green until one of those two stops being true.",
+	},
+	{
+		Flap:      newFlap("f-stale", "STALE"),
+		BadgePath: "/badge/example-amber.svg",
+		BadgeAlt:  "Example audit badge: amber, audited 40 days ago, 0 critical open, stale",
+		Lead:      "Day 30 turns the flap.",
+		Rest:      "The word stale is printed inside the plate, so the state survives a grayscale screen.",
+	},
+	{
+		Flap:      newFlap("f-crit", "CRITICAL OPEN"),
+		BadgePath: "/badge/example-red.svg",
+		BadgeAlt:  "Example audit badge: red, audited today, 1 critical open",
+		Lead:      "Red on day one if it has to be.",
+		Rest:      "One open critical beats a fresh audit date, and it stays red until that finding is closed.",
+	},
+}
+
+// publishedFields is the register of what a closeout summary publishes,
+// Schedule 1 on the landing page.
+var publishedFields = []string{
+	"name", "summary", "source", "audit",
+	"found", "fixed", "accepted", "criticals open", "criticals accepted",
+}
+
+// installTab is one tear off tab under the perforated rule: its number,
+// what tearing it off does, and the line to run.
+type installTab struct {
+	No      string
+	What    string
+	Command string
 }
 
 // installCommands is the exact, fixed pair of commands shown on the
-// landing page.
-var installCommands = []string{
-	"claude plugin marketplace add parallaxintelligencepartnership/itworks",
-	"claude plugin install itworks@itworks",
+// landing page, in the order they have to be run.
+var installCommands = []installTab{
+	{No: "Tab 01", What: "add the marketplace", Command: "claude plugin marketplace add parallaxintelligencepartnership/itworks"},
+	{No: "Tab 02", What: "install the plugin", Command: "claude plugin install itworks@itworks"},
+}
+
+// Page descriptions. Each one is under 160 characters, says what the page
+// is, and never repeats another page's line.
+const (
+	landingDescription  = "A public notice board of closeout audits. Every notice prints the audit date and the criticals still open, and the badge says so in a README."
+	wallDescription     = "The public register of closeout audits, newest first. Same columns for everyone: audit date, findings found, fixed and accepted, criticals open."
+	notFoundDescription = "This page is not posted on itworks.build. A notice that was taken down leaves no page behind."
+)
+
+// entryDescription is the description a crawler and a link preview get for
+// one posted notice: the name, the one line, and the two facts that date it.
+func entryDescription(e view) string {
+	d := fmt.Sprintf("%s: %s Audit %s, %d critical open.", e.Name, e.Summary, e.AuditDate, e.CriticalOpen)
+	return clip(d, 300)
+}
+
+// clip cuts a description at the last space before n runes so a crawler
+// never gets half a word.
+func clip(s string, n int) string {
+	if len([]rune(s)) <= n {
+		return s
+	}
+	r := []rune(s)[:n]
+	if i := strings.LastIndex(string(r), " "); i > 0 {
+		return string(r)[:i]
+	}
+	return string(r)
+}
+
+// siteJSONLD is the publisher and the site, as one JSON-LD graph. It is
+// built with encoding/json rather than written into the template by hand,
+// so the escaping is the encoder's job and no page can emit broken JSON.
+func siteJSONLD() (template.JS, error) {
+	org := map[string]any{
+		"@type": "Organization",
+		"@id":   orgURL + "#organization",
+		"name":  orgName,
+		"url":   orgURL,
+		"email": orgEmail,
+		"address": map[string]any{
+			"@type":           "PostalAddress",
+			"addressLocality": orgCity,
+			"addressRegion":   orgRegion,
+			"addressCountry":  orgCountry,
+		},
+		"sameAs": []string{
+			"https://parallaxintelligence.digital",
+			"https://stillpub.app",
+			"https://postmortem.report",
+			"https://github.com/parallaxintelligencepartnership",
+		},
+	}
+	site := map[string]any{
+		"@type":     "WebSite",
+		"@id":       baseURL + "#website",
+		"name":      siteName,
+		"url":       baseURL,
+		"publisher": map[string]any{"@id": orgURL + "#organization"},
+	}
+	doc := map[string]any{
+		"@context": "https://schema.org",
+		"@graph":   []any{org, site},
+	}
+	b, err := json.Marshal(doc)
+	if err != nil {
+		return "", fmt.Errorf("render the JSON-LD: %w", err)
+	}
+	return template.JS(b), nil
 }

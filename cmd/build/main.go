@@ -12,6 +12,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"html/template"
@@ -114,25 +115,54 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		preview = preview[:landingPreviewCount]
 	}
 
+	// Every page carries the same publisher graph and the same build date;
+	// only the title, the description and the canonical URL change.
+	ld, err := siteJSONLD()
+	if err != nil {
+		return err
+	}
+	head := func(title, description, path, nav string) meta {
+		return meta{
+			Title:       title,
+			Description: description,
+			Canonical:   baseURL + path,
+			JSONLD:      ld,
+			BuildDate:   today.Format("2006-01-02"),
+			Nav:         nav,
+		}
+	}
+
 	pages := []struct {
 		path string
 		tmpl string
 		data any
 	}{
 		{"index.html", "landing.html", landingData{
-			Title:           "itworks.build",
+			meta:            head("itworks.build", landingDescription, "/", ""),
+			NoticeNo:        "001",
 			InstallCommands: installCommands,
 			Entries:         preview,
+			Rows:            rows(preview),
+			States:          boardStates,
+			Published:       publishedFields,
 		}},
-		{filepath.Join("wall", "index.html"), "wall.html", wallData{Title: "The wall", Entries: views}},
-		{"404.html", "notfound.html", pageData{Title: "Page not found"}},
+		{filepath.Join("wall", "index.html"), "wall.html", wallData{
+			meta: head("The wall / itworks.build", wallDescription, "/wall/", "wall"),
+			Rows: rows(views),
+		}},
+		{"404.html", "notfound.html", pageData{
+			meta: head("Not posted / itworks.build", notFoundDescription, "/404.html", ""),
+		}},
 	}
 	for _, e := range views {
 		pages = append(pages, struct {
 			path string
 			tmpl string
 			data any
-		}{filepath.Join("e", e.ID, "index.html"), "entry.html", entryData{Title: e.Name, Entry: e}})
+		}{filepath.Join("e", e.ID, "index.html"), "entry.html", entryData{
+			meta:  head(e.Name+" / itworks.build", entryDescription(e), "/e/"+e.ID+"/", "wall"),
+			Entry: e,
+		}})
 	}
 
 	for _, p := range pages {
@@ -166,6 +196,17 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 		return err
 	}
 
+	smap, err := sitemap(views, today)
+	if err != nil {
+		return err
+	}
+	if err := writeFile(outDir, "sitemap.xml", smap); err != nil {
+		return err
+	}
+	if err := writeFile(outDir, "robots.txt", robotsTxt()); err != nil {
+		return err
+	}
+
 	if err := copyStatic(outDir); err != nil {
 		return err
 	}
@@ -180,7 +221,7 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 // relative to outDir. cleanOutDir removes only these, so it never touches
 // anything a maintainer might have placed in outDir by hand.
 var ownedOutputPaths = []string{
-	"index.html", "404.html", "CNAME", ".nojekyll",
+	"index.html", "404.html", "CNAME", ".nojekyll", "sitemap.xml", "robots.txt",
 	"wall", "e", "badge", "api", "static",
 }
 
@@ -251,4 +292,52 @@ func writeFile(outDir, rel string, data []byte) error {
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 	return nil
+}
+
+// sitemapURL is one <url> of the sitemap: where the page is and the day
+// its content last changed.
+type sitemapURL struct {
+	Loc     string `xml:"loc"`
+	LastMod string `xml:"lastmod,omitempty"`
+}
+
+// urlSet is the sitemap document.
+type urlSet struct {
+	XMLName xml.Name     `xml:"urlset"`
+	NS      string       `xml:"xmlns,attr"`
+	URLs    []sitemapURL `xml:"url"`
+}
+
+// sitemap lists the pages a crawler should hold: the landing page, the
+// wall, and one entry page each. An entry's lastmod is the day its pull
+// request was merged, which is the day the notice went up and the only day
+// its text ever changed; the two board pages are rebuilt daily, so they
+// carry the build date.
+func sitemap(views []view, today time.Time) ([]byte, error) {
+	day := today.UTC().Format("2006-01-02")
+	set := urlSet{
+		NS: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		URLs: []sitemapURL{
+			{Loc: baseURL + "/", LastMod: day},
+			{Loc: baseURL + "/wall/", LastMod: day},
+		},
+	}
+	for _, v := range views {
+		last := day
+		if !v.ApprovedAt.IsZero() {
+			last = v.ApprovedAt.UTC().Format("2006-01-02")
+		}
+		set.URLs = append(set.URLs, sitemapURL{Loc: v.EntryURL, LastMod: last})
+	}
+	body, err := xml.MarshalIndent(set, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("render the sitemap: %w", err)
+	}
+	return append(append([]byte(xml.Header), body...), '\n'), nil
+}
+
+// robotsTxt invites every crawler and points at the sitemap. Nothing on
+// this site is hidden: the record is the point of it.
+func robotsTxt() []byte {
+	return []byte("User-agent: *\nAllow: /\nSitemap: " + baseURL + "/sitemap.xml\n")
 }

@@ -1,124 +1,123 @@
-{{template "head" .Title}}
+{{template "head" .}}
 <main id="main">
 
-<header class="mast bleed snap">
-<h1 class="wordmark">itworks<span class="dot">.</span>build</h1>
-<p class="tag">Anyone can say it works. This wall prints the receipt.</p>
-{{if .Entries}}
-<a class="mast-badge b" href="{{(index .Entries 0).EntryPath}}"><img class="badge" src="{{(index .Entries 0).BadgePath}}" alt="Audit badge for {{(index .Entries 0).Name}}: {{(index .Entries 0).BadgeColor}}, {{(index .Entries 0).AuditDate}}, {{(index .Entries 0).CriticalOpen}} critical open, {{(index .Entries 0).CriticalAccepted}} critical accepted by the owner"></a>
-{{else}}
-<div class="mast-badge b">
-<img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open">
-</div>
-{{end}}
-</header>
+<section class="notice bleed">
+<div class="rule-heavy"></div>
+<p class="dateline"><span>Notice no. <b class="num">{{.NoticeNo}}</b></span><span>Posted <b class="num">{{.BuildDate}}</b></span><span>Post until further notice</span><span>Read it before you trust it</span></p>
+<div class="rule-hair"></div>
 
-<section class="flow-sec bleed">
-<ol class="flow">
-<li><b>Build</b> with the itworks plugin.</li>
-<li><b>Run</b> the closeout review.</li>
-<li><b>Publish</b> the summary here.</li>
-<li><b>Paste</b> the badge in your README.</li>
-</ol>
+<h1 class="wordmark">itworks<span class="dot">.</span>build</h1>
+
+<div class="claim">
+<p class="head l1">Anyone can say it works.</p>
+<p class="head l2">This wall prints the receipt.</p>
+</div>
+
+<div class="posted">
+<div>
+<p class="cap">The notice, as posted</p>
+{{if .Entries}}{{with index .Entries 0}}<a class="plate-frame" href="{{.EntryPath}}"><img class="plate" src="{{.BadgePath}}" alt="Audit badge for {{.Name}}: {{.BadgeColor}}, {{.AuditDate}}, {{.CriticalOpen}} critical open, {{.CriticalAccepted}} critical accepted by the owner"></a>{{end}}
+{{else}}<span class="plate-frame"><img class="plate" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open"></span>
+{{end}}
+</div>
+<div>
+<p class="cap">What this board is</p>
+<p class="sub">Every entry is a closeout summary: the audit date, and the count of findings found, fixed, accepted, and criticals still open. One badge per entry, posted at the same size for everyone.</p>
+<p class="sub">The badge is not a logo. It is the notice.</p>
+</div>
+</div>
 </section>
 
-<section class="strip bleed" aria-labelledby="strip-h">
-<div class="strip-head">
-<h2 class="h-xl" id="strip-h">The badge ages in public.</h2>
-<p class="lede">On day 30 the plate turns amber and says stale.</p>
+<section class="board-sec bleed" aria-labelledby="board-h">
+<p class="dateline"><span>Board <b>A</b></span><span>Three states, no others</span></p>
+<h2 class="head h2" id="board-h">The flaps say it out loud.</h2>
+
+<div class="bhead"><span>State</span><span>The plate</span><span>When it reads that way</span></div>
+
+{{range .States}}<div class="brow">
+{{template "flap" .Flap}}
+<img class="plate" src="{{.BadgePath}}" alt="{{.BadgeAlt}}">
+<p class="bnote"><b>{{.Lead}}</b> {{.Rest}}</p>
 </div>
+{{end}}
+</section>
+
+<section class="ruler-sec bleed" aria-labelledby="ruler-h">
+<p class="dateline"><span>Board <b>B</b></span><span>Posted term, 60 days</span></p>
+<h2 class="head h2" id="ruler-h">A notice has an expiry.</h2>
 
 <div class="ruler">
-<div class="track" aria-hidden="true">
-<div class="runner">
-<span class="plate green b"><img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open"></span>
-<span class="plate amber b"><img class="badge" src="/badge/example-amber.svg" alt="Example audit badge: amber, audited 40 days ago, 0 critical open"></span>
+<div class="zones">
+<span class="z z-green"><span class="lg">Day 0 to 29 &middot; green</span><span class="sm">Day 0 to 29</span></span>
+<span class="z z-amber"><span class="lg">Day 30 and after &middot; amber, stale</span><span class="sm">Day 30+ &middot; stale</span></span>
 </div>
-</div>
-
-<div class="trail" aria-hidden="true"></div>
 <div class="ticks" aria-hidden="true"></div>
-
 <ol class="axis num" aria-hidden="true">
-<li>0</li><li>10</li><li>20</li><li class="mark">30</li><li>40</li><li>50</li><li>60</li>
+<li class="d0">0</li><li class="d10">10</li><li class="d20">20</li>
+<li class="d30 mark">30</li><li class="d40">40</li><li class="d50">50</li><li class="d60">60</li>
 </ol>
-
-<p class="odo" aria-hidden="true">
-<span class="odo-win"><span class="odo-reel num"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></span></span>
-<b class="unit">days</b>
-</p>
-<p class="rm-only">Day 0 and day 30.</p>
-</div>
-</section>
-
-<section class="spec bleed" aria-labelledby="spec-h">
-<h2 class="h-lg" id="spec-h">Three plates.</h2>
-
-<div class="plates">
-<figure class="fig fig-current">
-<span class="lg b"><img class="badge" src="/badge/example-green.svg" alt="Example audit badge: green, audited today, 0 critical open"></span>
-<figcaption>current</figcaption>
-</figure>
-
-<figure class="fig fig-stale">
-<span class="lg b"><img class="badge" src="/badge/example-amber.svg" alt="Example audit badge: amber, audited 40 days ago, 0 critical open"></span>
-<figcaption>stale</figcaption>
-</figure>
-
-<figure class="fig fig-crit">
-<span class="lg b"><img class="badge" src="/badge/example-red.svg" alt="Example audit badge: red, 1 critical open"></span>
-<figcaption>critical open</figcaption>
-</figure>
 </div>
 
-<button class="howbtn" popovertarget="how">The rule</button>
-
-<div id="how" popover>
-<ol>
-<li>Red if any critical is open.</li>
-<li>Amber at 30 days or older.</li>
-<li>Otherwise green.</li>
-</ol>
-<button class="close" popovertarget="how" popovertargetaction="hide">Close</button>
-</div>
-</section>
-
-<section class="wall bleed snap" aria-labelledby="wall-h">
-<div class="wall-head">
+<div class="two-up">
 <div>
-<h2 class="h-lg" id="wall-h">The wall</h2>
-<p class="lede">Same columns for everyone.</p>
+<p class="cap">Day 0, the day it was audited</p>
+<img class="plate" src="/badge/example-green.svg" alt="Example audit badge at day 0: green, 0 critical open">
 </div>
-<p class="wall-more"><a href="/wall/">every entry</a></p>
+<div>
+<p class="cap">Day 30, same entry, nothing changed but time</p>
+<img class="plate" src="/badge/example-amber.svg" alt="Example audit badge at day 40: amber, 0 critical open, stale">
+</div>
 </div>
 
-{{if .Entries}}
-<div class="ledger">
-{{template "colhead" .}}
-{{range .Entries}}{{template "ledgerrow" .}}
-{{end}}
+<div class="override">
+<p class="big">The calendar is only half of it.</p>
+<p>An open critical takes the plate red on any day, including day one, and the ruler has nothing to say about it.</p>
 </div>
-{{else}}
-<p class="empty">Nothing on the wall yet.</p>
-{{end}}
 </section>
 
-<section class="install bleed snap" aria-labelledby="install-h">
-<h2 class="h-lg" id="install-h">Two lines.</h2>
-<div class="cmds">
-{{range .InstallCommands}}<div class="cmd"><code>{{.}}</code></div>
+<section class="tear-sec bleed" aria-labelledby="install-h">
+<p class="dateline"><span>Tear one off</span><span>Two lines, in this order</span></p>
+<h2 class="head h2" id="install-h">Take a tab.</h2>
+
+<div class="tabs tabs-2">
+{{range .InstallCommands}}<div class="tab">
+<span class="n">{{.No}} &middot; {{.What}}</span>
+<code>{{.Command}}</code>
+</div>
 {{end}}</div>
 </section>
 
-<section class="payload bleed" aria-labelledby="payload-h">
-<h2 class="h-lg" id="payload-h">What gets published.</h2>
-<ul class="fields">
-<li>name</li><li>summary</li><li>source</li><li>audit</li>
-<li>found</li><li>fixed</li><li>accepted</li><li>criticals open</li><li>criticals accepted</li>
-</ul>
-<div class="stop">
+<section class="prev-sec bleed" aria-labelledby="prev-h">
+<p class="dateline"><span>Register <b class="num">001</b></span><span>Latest notices</span><span>Newest first</span></p>
+<h2 class="head h2" id="prev-h">On the board now.</h2>
+
+{{if .Rows}}
+{{template "colhead"}}
+{{range .Rows}}{{template "noticerow" .}}
+{{end}}
+<p class="reg-more"><a href="/wall/">Read the whole register</a></p>
+{{else}}
+<div class="slot">
+<span class="pin p1"></span><span class="pin p2"></span><span class="pin p3"></span><span class="pin p4"></span>
+<p class="lab">Slot 001 &middot; ruled off, pins in, reserved</p>
+<p class="big">Nothing on the wall yet.</p>
+<p class="sub">Run the closeout review with the itworks plugin and publish the summary. The board fills from the top, and the columns are already set.</p>
+<p class="back"><a href="/wall/">Go to the wall</a></p>
+</div>
+{{end}}
+</section>
+
+<section class="reg-sec bleed" id="published" aria-labelledby="pub-h">
+<p class="dateline"><span>Schedule <b>1</b></span><span>The published register</span></p>
+<h2 class="head h2" id="pub-h">What gets published.</h2>
+
+<ol class="reg">
+{{range .Published}}<li>{{.}}</li>
+{{end}}</ol>
+
+<div class="stamp-wrap">
 <p class="big">Nothing else leaves your machine.</p>
-<p class="fine">The site never runs a model.</p>
+<p class="stamp">This site never runs a model<i>Parallax Intelligence Partnership</i></p>
 </div>
 </section>
 

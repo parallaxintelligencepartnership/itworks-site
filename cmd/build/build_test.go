@@ -422,10 +422,10 @@ func TestBadgeColorCountsAcceptedCriticals(t *testing.T) {
 	}
 	// The entry page keeps the numbers apart, never added into one word.
 	page := readFile(t, out, "e", "acceptedcrit", "index.html")
-	if !strings.Contains(page, `<span class="lab">critical open</span><span class="v num">0</span>`) {
+	if !strings.Contains(page, `<span class="k">critical open</span><span class="v num">0</span>`) {
 		t.Fatalf("entry page does not show 0 critical open:\n%s", page)
 	}
-	if !strings.Contains(page, `<span class="lab">critical accepted by the owner</span><span class="v num">1</span>`) {
+	if !strings.Contains(page, `<span class="k">critical accepted by the owner</span><span class="v num">1</span>`) {
 		t.Fatalf("entry page does not show 1 critical accepted:\n%s", page)
 	}
 }
@@ -459,15 +459,15 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	if i < 0 {
 		t.Fatalf("wall is missing acceptedcrit")
 	}
-	end := strings.Index(wall[i:], `<div class="badgecell">`)
+	end := strings.Index(wall[i:], `<a class="plate-frame"`)
 	if end < 0 {
-		t.Fatalf("wall row for acceptedcrit has no badgecell")
+		t.Fatalf("wall row for acceptedcrit has no badge plate")
 	}
 	row := wall[i : i+end]
-	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span> <span class="crit-accepted">(1 accepted)</span>`) {
+	if !strings.Contains(row, `<span class="k">critical</span><span class="v num">1</span><span class="note">1 accepted</span>`) {
 		t.Fatalf("wall critical cell does not count the accepted critical:\n%s", row)
 	}
-	if strings.Contains(row, "crit-zero") {
+	if strings.Contains(row, "c-zero") {
 		t.Fatalf("wall critical cell styles an accepted critical as zero:\n%s", row)
 	}
 
@@ -475,18 +475,259 @@ func TestWallCriticalCellCountsAcceptedCriticals(t *testing.T) {
 	if j < 0 {
 		t.Fatalf("wall is missing cleanentry01")
 	}
-	endJ := strings.Index(wall[j:], `<div class="badgecell">`)
+	endJ := strings.Index(wall[j:], `<a class="plate-frame"`)
 	if endJ < 0 {
-		t.Fatalf("wall row for cleanentry01 has no badgecell")
+		t.Fatalf("wall row for cleanentry01 has no badge plate")
 	}
 	rowJ := wall[j : j+endJ]
-	if !strings.Contains(rowJ, `<span class="k">critical</span><span class="v num">0</span></p>`) {
+	if !strings.Contains(rowJ, `<span class="k">critical</span><span class="v num">0</span></div>`) {
 		t.Fatalf("wall critical cell does not show 0 with nothing appended:\n%s", rowJ)
 	}
-	if strings.Contains(rowJ, "crit-accepted") {
+	if strings.Contains(rowJ, `class="note"`) {
 		t.Fatalf("wall critical cell should not mention accepted for a clean entry:\n%s", rowJ)
 	}
-	if !strings.Contains(rowJ, "crit-zero") {
+	if !strings.Contains(rowJ, "c-zero") {
 		t.Fatalf("wall critical cell does not style a clean entry as zero:\n%s", rowJ)
+	}
+}
+
+// pageFiles are the four page kinds, keyed by the path they are written
+// to, for the tests that hold for every page on the site.
+func pageFiles(out string) map[string]string {
+	return map[string]string{
+		"index.html": "index.html",
+		"wall":       filepath.Join("wall", "index.html"),
+		"entry":      filepath.Join("e", fixtureID, "index.html"),
+		"404.html":   "404.html",
+	}
+}
+
+// TestEveryPageIsCrawlable covers the head a search engine reads: the page
+// has to name its own absolute address, describe itself in its own words,
+// and carry the publisher graph.
+func TestEveryPageIsCrawlable(t *testing.T) {
+	out := t.TempDir()
+	mustRun(t, entriesDirWithFixture(t), out, buildToday, false)
+
+	canonicals := map[string]string{
+		"index.html": "https://itworks.build/",
+		"wall":       "https://itworks.build/wall/",
+		"entry":      "https://itworks.build/e/" + fixtureID + "/",
+		"404.html":   "https://itworks.build/404.html",
+	}
+	seen := map[string]string{}
+	for name, rel := range pageFiles(out) {
+		body := readFile(t, out, rel)
+
+		want := `<link rel="canonical" href="` + canonicals[name] + `">`
+		if !strings.Contains(body, want) {
+			t.Fatalf("%s is missing %s", name, want)
+		}
+		if !strings.Contains(body, `<meta property="og:url" content="`+canonicals[name]+`">`) {
+			t.Fatalf("%s og:url is not its canonical URL", name)
+		}
+		for _, want := range []string{
+			`<meta property="og:type" content="website">`,
+			`<meta property="og:site_name" content="itworks.build">`,
+			`<meta name="twitter:card" content="summary">`,
+			`<meta property="og:title" content=`,
+			`<meta property="og:description" content=`,
+		} {
+			if !strings.Contains(body, want) {
+				t.Fatalf("%s is missing %s", name, want)
+			}
+		}
+
+		// The description is the page's own, not a site wide boilerplate.
+		i := strings.Index(body, `<meta name="description" content="`)
+		if i < 0 {
+			t.Fatalf("%s has no description", name)
+		}
+		rest := body[i+len(`<meta name="description" content="`):]
+		desc := rest[:strings.Index(rest, `"`)]
+		if len(desc) < 40 {
+			t.Fatalf("%s description is too thin: %q", name, desc)
+		}
+		if other, dup := seen[desc]; dup {
+			t.Fatalf("%s repeats the description of %s", name, other)
+		}
+		seen[desc] = name
+
+		// One JSON-LD block, naming the publisher and the site, and it has
+		// to parse as JSON.
+		const open = `<script type="application/ld+json">`
+		j := strings.Index(body, open)
+		if j < 0 {
+			t.Fatalf("%s has no JSON-LD", name)
+		}
+		raw := body[j+len(open):]
+		raw = raw[:strings.Index(raw, `</script>`)]
+		var doc struct {
+			Context string `json:"@context"`
+			Graph   []struct {
+				Type   string   `json:"@type"`
+				Name   string   `json:"name"`
+				URL    string   `json:"url"`
+				Email  string   `json:"email"`
+				SameAs []string `json:"sameAs"`
+				Addr   struct {
+					Locality string `json:"addressLocality"`
+					Region   string `json:"addressRegion"`
+					Country  string `json:"addressCountry"`
+				} `json:"address"`
+			} `json:"@graph"`
+		}
+		if err := json.Unmarshal([]byte(raw), &doc); err != nil {
+			t.Fatalf("%s JSON-LD does not parse: %v", name, err)
+		}
+		if doc.Context != "https://schema.org" {
+			t.Fatalf("%s JSON-LD @context = %q", name, doc.Context)
+		}
+		if len(doc.Graph) != 2 {
+			t.Fatalf("%s JSON-LD has %d nodes, want the organization and the website", name, len(doc.Graph))
+		}
+		org, site := doc.Graph[0], doc.Graph[1]
+		if org.Type != "Organization" || org.Name != "Parallax Intelligence Partnership, LLC" {
+			t.Fatalf("%s JSON-LD organization = %+v", name, org)
+		}
+		if org.URL != "https://parallaxintelligence.ai" || org.Email != "hello@parallaxintelligence.ai" {
+			t.Fatalf("%s JSON-LD organization url or email is wrong: %+v", name, org)
+		}
+		if org.Addr.Locality != "Battle Creek" || org.Addr.Region != "MI" || org.Addr.Country != "US" {
+			t.Fatalf("%s JSON-LD address = %+v", name, org.Addr)
+		}
+		for _, want := range []string{
+			"https://parallaxintelligence.digital",
+			"https://stillpub.app",
+			"https://postmortem.report",
+			"https://github.com/parallaxintelligencepartnership",
+		} {
+			if !slicesContains(org.SameAs, want) {
+				t.Fatalf("%s JSON-LD sameAs is missing %s", name, want)
+			}
+		}
+		if site.Type != "WebSite" || site.Name != "itworks.build" || site.URL != "https://itworks.build" {
+			t.Fatalf("%s JSON-LD website = %+v", name, site)
+		}
+	}
+}
+
+func slicesContains(list []string, want string) bool {
+	for _, s := range list {
+		if s == want {
+			return true
+		}
+	}
+	return false
+}
+
+// TestSitemapAndRobots covers what a crawler is handed at the root: every
+// page of the site with the day it last changed, and a robots.txt that
+// invites the crawl and points at the sitemap.
+func TestSitemapAndRobots(t *testing.T) {
+	approved := time.Date(2026, 9, 12, 0, 0, 0, 0, time.UTC)
+	entries := []entry.Entry{{
+		ID: "sitemapentr1", Name: "Sitemap Entry", Summary: "in the sitemap",
+		Source: "public", AuditTier: "audit", AuditDate: "2026-09-10",
+		Found: 2, Fixed: 2, ApprovedAt: approved,
+	}}
+	out := t.TempDir()
+	if err := render(entries, out, time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	var doc struct {
+		XMLName xml.Name `xml:"urlset"`
+		URLs    []struct {
+			Loc     string `xml:"loc"`
+			LastMod string `xml:"lastmod"`
+		} `xml:"url"`
+	}
+	if err := xml.Unmarshal([]byte(readFile(t, out, "sitemap.xml")), &doc); err != nil {
+		t.Fatalf("sitemap.xml does not parse: %v", err)
+	}
+	got := map[string]string{}
+	for _, u := range doc.URLs {
+		got[u.Loc] = u.LastMod
+	}
+	for _, want := range []string{"https://itworks.build/", "https://itworks.build/wall/"} {
+		if _, ok := got[want]; !ok {
+			t.Fatalf("sitemap does not list %s: %+v", want, got)
+		}
+	}
+	const entryURL = "https://itworks.build/e/sitemapentr1/"
+	if got[entryURL] != "2026-09-12" {
+		t.Fatalf("sitemap lastmod for the entry = %q, want its approval date 2026-09-12", got[entryURL])
+	}
+
+	robots := readFile(t, out, "robots.txt")
+	for _, want := range []string{"User-agent: *", "Allow: /", "Sitemap: https://itworks.build/sitemap.xml"} {
+		if !strings.Contains(robots, want) {
+			t.Fatalf("robots.txt is missing %q:\n%s", want, robots)
+		}
+	}
+}
+
+// TestFooterCarriesTheRecordAndFollowsItsLinks pins the footer rules: the
+// legal name is stated once, the sister sites and the repos are listed
+// under headings that say what they are, every outbound link is followed,
+// and LinkedIn is nowhere.
+func TestFooterCarriesTheRecordAndFollowsItsLinks(t *testing.T) {
+	out := t.TempDir()
+	mustRun(t, entriesDirWithFixture(t), out, buildToday, false)
+
+	for name, rel := range pageFiles(out) {
+		body := readFile(t, out, rel)
+		i := strings.Index(body, "<footer")
+		if i < 0 {
+			t.Fatalf("%s has no footer", name)
+		}
+		foot := body[i:]
+
+		// Stated once, as the identity block. The JSON-LD says it again
+		// for a machine, which is not copy on the page.
+		if n := strings.Count(foot, "Parallax Intelligence Partnership, LLC"); n != 1 {
+			t.Fatalf("%s footer names the full legal entity %d times, want exactly once", name, n)
+		}
+		for _, want := range []string{
+			"Battle Creek, Michigan",
+			`href="mailto:hello@parallaxintelligence.ai"`,
+			"This site never runs a model.",
+			"&copy; 2026",
+			// sister sites
+			`href="https://parallaxintelligence.ai"`,
+			`href="https://parallaxintelligence.digital"`,
+			`href="https://stillpub.app"`,
+			`href="https://postmortem.report"`,
+			// the org and every repo it publishes
+			`href="https://github.com/parallaxintelligencepartnership"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks-site"`,
+			`href="https://github.com/parallaxintelligencepartnership/weatherdesk"`,
+			`href="https://github.com/parallaxintelligencepartnership/openscan-hub"`,
+			`href="https://github.com/parallaxintelligencepartnership/pulse-libre"`,
+			`href="https://github.com/parallaxintelligencepartnership/frigateios"`,
+			// the record kept here
+			`href="/wall/"`,
+			`href="/api/entries.json"`,
+			`href="https://github.com/parallaxintelligencepartnership/itworks-site#embedding-the-wall-on-another-site"`,
+			// a heading in the notice voice, never the bare brand word
+			"Also posted by this office",
+		} {
+			if !strings.Contains(foot, want) {
+				t.Fatalf("%s footer is missing %q", name, want)
+			}
+		}
+
+		// Link equity is the point of these links: none of them is dropped.
+		if strings.Contains(foot, "nofollow") {
+			t.Fatalf("%s footer marks an outbound link nofollow", name)
+		}
+		if strings.Contains(strings.ToLower(body), "linkedin") {
+			t.Fatalf("%s carries a LinkedIn link", name)
+		}
+		if strings.Contains(foot, ">Parallax<") {
+			t.Fatalf("%s footer uses the bare word Parallax as a heading", name)
+		}
 	}
 }

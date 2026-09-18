@@ -1,36 +1,72 @@
-{{template "head" .Title}}
+{{template "head" .}}
 <main id="main">
 
-<article class="sheet bleed snap">
-<div class="sheet-head">
+<article class="sheet bleed">
+<div class="rule-heavy"></div>
+<p class="dateline"><span>Notice no. <b class="num">{{.Entry.ID}}</b></span><span>Posted <b class="num">{{.Entry.AuditDate}}</b></span><span>{{.Entry.AuditTier}} &middot; day <b class="num">{{.Entry.AgeDays}}</b></span><span>Posted by the owner</span></p>
+<div class="rule-hair"></div>
+
+<h1 class="head name">{{.Entry.Name}}</h1>
+<p class="sum">{{.Entry.Summary}}</p>
+
+<div class="facts">
+<p class="fact"><span class="k">source</span><span class="v"><b>{{.Entry.Source}}</b></span></p>
+<p class="fact"><span class="k">repo</span><span class="v">{{if .Entry.RepoURL}}<a href="{{.Entry.RepoURL}}" rel="nofollow noopener noreferrer">{{.Entry.RepoURL}}</a>{{else}}source not published{{end}}</span></p>
+<p class="fact"><span class="k">{{.Entry.AuditTier}} date</span><span class="v num">{{.Entry.AuditDate}}</span></p>
+</div>
+
+<div class="posted">
 <div>
-<h1 class="h-xl">{{.Entry.Name}}</h1>
-<p class="lede">{{.Entry.Summary}}</p>
+<p class="cap">The notice, as posted</p>
+<span class="plate-frame"><img class="plate" src="{{.Entry.BadgePath}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open, {{.Entry.CriticalAccepted}} critical accepted by the owner"></span>
 </div>
-<div class="sheet-badge b">
-<img class="badge" src="{{.Entry.BadgePath}}" alt="Audit badge for {{.Entry.Name}}: {{.Entry.BadgeColor}}, {{.Entry.AuditDate}}, {{.Entry.CriticalOpen}} critical open, {{.Entry.CriticalAccepted}} critical accepted by the owner">
-<span class="state">{{if eq .Entry.BadgeColor "red"}}critical open{{else if eq .Entry.BadgeColor "amber"}}stale, over 30 days{{else}}current{{end}}</span>
+<div>
+<p class="cap">Post it yourself</p>
+<div class="tabs">
+<div class="tab">
+<span class="n">Tab 01 &middot; the badge, in your README</span>
+<pre><code>![audit badge]({{.Entry.BadgeURL}})</code></pre>
+</div>
+</div>
 </div>
 </div>
 
-<ul class="meta">
-<li><span class="lab">source</span><b>{{.Entry.Source}}</b>{{if .Entry.RepoURL}} <a href="{{.Entry.RepoURL}}" rel="nofollow noopener noreferrer">repo</a>{{end}}</li>
-<li><span class="lab">tier</span><b>{{.Entry.AuditTier}}</b></li>
-<li><span class="lab">audit</span><b class="num">{{.Entry.AuditDate}}</b></li>
-</ul>
-
-<ul class="tally">
-<li><span class="lab">found</span><span class="v num">{{.Entry.Found}}</span></li>
-<li><span class="lab">fixed</span><span class="v num">{{.Entry.Fixed}}</span></li>
-<li><span class="lab">accepted</span><span class="v num">{{.Entry.Accepted}}</span></li>
-<li class="{{if .Entry.CriticalOpen}}crit-open{{else}}crit-zero{{end}}"><span class="lab">critical open</span><span class="v num">{{.Entry.CriticalOpen}}</span></li>
-<li class="{{if .Entry.CriticalAccepted}}crit-open{{else}}crit-zero{{end}}"><span class="lab">critical accepted by the owner</span><span class="v num">{{.Entry.CriticalAccepted}}</span></li>
-</ul>
+<div class="figures">
+<div class="f"><span class="k">found</span><span class="v num">{{.Entry.Found}}</span></div>
+<div class="f"><span class="k">fixed</span><span class="v num">{{.Entry.Fixed}}</span></div>
+<div class="f"><span class="k">accepted</span><span class="v num">{{.Entry.Accepted}}</span></div>
+<div class="f {{if .Entry.CriticalOpen}}f-crit{{end}}"><span class="k">critical open</span><span class="v num">{{.Entry.CriticalOpen}}</span></div>
+<div class="f {{if .Entry.CriticalAccepted}}f-crit{{end}}"><span class="k">critical accepted by the owner</span><span class="v num">{{.Entry.CriticalAccepted}}</span></div>
+</div>
 </article>
 
-<section class="snippet bleed" aria-labelledby="snip-h">
-<h2 class="h-lg" id="snip-h">Put it in the README.</h2>
-<pre class="code"><code>![audit badge]({{.Entry.BadgeURL}})</code></pre>
+<section class="state-sec bleed" aria-labelledby="state-h">
+<p class="dateline"><span>Board <b>A</b></span><span>State of this notice</span></p>
+<h2 class="head h2" id="state-h">Reading now.</h2>
+{{template "flap" .Entry.Flap}}
+<p class="bnote"><b>{{.Entry.Name}} reads {{.Entry.State}}.</b> Red if a critical is open, amber from day 30, green below that. The plate in a README says the same thing, and it is rebuilt every day.</p>
+</section>
+
+<section class="term-sec bleed" aria-labelledby="term-h">
+<p class="dateline"><span>Board <b>B</b></span><span>Posted term, 60 days</span></p>
+<h2 class="head h2" id="term-h">Day {{.Entry.AgeDays}} of this notice.</h2>
+
+<div class="ruler">
+<div class="lane">
+<div class="zones">
+<span class="z z-green"><span class="lg">Day 0 to 29 &middot; green</span><span class="sm">Day 0 to 29</span></span>
+<span class="z z-amber"><span class="lg">Day 30 and after &middot; amber, stale</span><span class="sm">Day 30+ &middot; stale</span></span>
+</div>
+<div class="ticks" aria-hidden="true"></div>
+<span class="today" style="--d:{{.Entry.AgeDays}}" aria-hidden="true"></span>
+</div>
+<ol class="axis num" aria-hidden="true">
+<li class="d0">0</li><li class="d10">10</li><li class="d20">20</li>
+<li class="d30 mark">30</li><li class="d40">40</li><li class="d50">50</li><li class="d60">60</li>
+</ol>
+</div>
+<p class="dayflag">Audited {{.Entry.AuditDate}} &middot; day {{.Entry.AgeDays}} of the term &middot; state {{.Entry.State}}</p>
+
 <p class="back"><a href="/wall/">Back to the wall</a></p>
 </section>
 
