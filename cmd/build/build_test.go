@@ -821,14 +821,12 @@ func TestFooterCarriesTheRecordAndFollowsItsLinks(t *testing.T) {
 			`href="https://parallaxintelligence.digital"`,
 			`href="https://stillpub.app"`,
 			`href="https://postmortem.report"`,
-			// the org and every repo it publishes
+			// the org and the public repos it lists
 			`href="https://github.com/parallaxintelligencepartnership"`,
 			`href="https://github.com/parallaxintelligencepartnership/itworks"`,
-			`href="https://github.com/parallaxintelligencepartnership/itworks-site"`,
+			`href="https://github.com/Parallax-Intelligence-Partnership-LLC/mailautopsy"`,
 			`href="https://github.com/parallaxintelligencepartnership/weatherdesk"`,
 			`href="https://github.com/parallaxintelligencepartnership/openscan-hub"`,
-			`href="https://github.com/parallaxintelligencepartnership/pulse-libre"`,
-			`href="https://github.com/parallaxintelligencepartnership/frigateios"`,
 			// the record kept here
 			`href="/wall/"`,
 			`href="/api/entries.json"`,

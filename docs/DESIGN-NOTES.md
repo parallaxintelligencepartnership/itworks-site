@@ -95,8 +95,8 @@ Decided 2026-09-17 (.itworks/DECISIONS.md), pinned by
 - Sister sites sit under "Also posted by this office": parallaxintelligence.ai,
   parallaxintelligence.digital, stillpub.app, postmortem.report. The bare word
   Parallax is never a heading; other entities share the name.
-- "The code, on GitHub" lists the org, then itworks, itworks-site, weatherdesk,
-  openscan-hub, pulse-libre, frigateios.
+- "The code, on GitHub" lists the org, then itworks, mailautopsy, weatherdesk,
+  openscan-hub.
 - "The record kept here" lists the wall, the JSON feed, and the embed
   instructions in the README.
 - Every outbound link in the footer is followed. `rel="noopener"` only, never
