@@ -15,7 +15,29 @@ A public wall of apps that were finished through the itworks plugin's closeout, 
 2. Merge to `main` (squash merge; the repo allows no other method, so the approval date is the merge time and cannot be set by a submitter).
 3. `pages.yml` builds and deploys automatically on the push to main, again every day at 05:17 UTC, and on demand from the Actions tab.
 4. Confirm: `curl -sI https://itworks.build/ | head -1` is 200, and `curl -s https://itworks.build/api/entries.json | grep built_at` shows the new build time.
-DNS records and the Pages settings are in README.md under "Pointing itworks.build at GitHub Pages".
+DNS records and the Pages settings are in the section below.
+
+## DNS and Pages settings
+DNS for `itworks.build` is on Cloudflare (DNS only, proxy off). Records:
+
+| Type | Name | Value |
+|---|---|---|
+| A | @ | 185.199.108.153 |
+| A | @ | 185.199.109.153 |
+| A | @ | 185.199.110.153 |
+| A | @ | 185.199.111.153 |
+| AAAA | @ | 2606:50c0:8000::153 |
+| AAAA | @ | 2606:50c0:8001::153 |
+| AAAA | @ | 2606:50c0:8002::153 |
+| AAAA | @ | 2606:50c0:8003::153 |
+| CNAME | www | parallaxintelligencepartnership.github.io |
+
+Repository settings under Settings then Pages:
+1. Source: GitHub Actions.
+2. Custom domain: `itworks.build`. The build writes a `CNAME` file into the artifact, so the setting and the file agree.
+3. Enforce HTTPS: on. It can only be turned on once GitHub reports the certificate as issued, a few minutes after the DNS records resolve.
+
+The daily 05:17 UTC build is what turns a badge amber on the thirtieth day after its audit.
 
 ## How to roll back
 Rehearsed 2026-09-17 on the first ship tag. Ship tags are `ship-YYYY-MM-DD`; `ship-2026-09-17` is the first known-good state, and the next ship inherits it as a real rollback target.
