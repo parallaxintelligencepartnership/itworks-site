@@ -1,0 +1,13 @@
+{
+  "name": "Hundred Stories",
+  "summary": "Hundred Stories is a free browser game and installable PWA: a tower-building sim with pixel art drawn in code, a from-scratch homage to SimTower.",
+  "source": "public",
+  "repo_url": "https://github.com/parallaxintelligencepartnership/hundred-stories",
+  "audit_tier": "audit",
+  "audit_date": "2026-09-19",
+  "found": 30,
+  "fixed": 30,
+  "accepted": 0,
+  "critical_open": 0,
+  "critical_accepted": 0
+}
