@@ -1,0 +1,13 @@
+{
+  "name": "Hundred Stories",
+  "summary": "A free tower-building sim for the browser with hand-drawn pixel art. Plays offline, saves in your browser, nothing uploaded. Live at hundredstories.xyz.",
+  "source": "public",
+  "repo_url": "https://github.com/parallaxintelligencepartnership/hundred-stories",
+  "audit_tier": "audit",
+  "audit_date": "2026-09-19",
+  "found": 26,
+  "fixed": 26,
+  "accepted": 0,
+  "critical_open": 0,
+  "critical_accepted": 0
+}
