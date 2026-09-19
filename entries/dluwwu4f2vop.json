@@ -3,7 +3,7 @@
   "summary": "Hundred Stories is a browser game and installable PWA that recreates the ruleset of the 1994 tower simulation, with original art and a deterministic sim core.",
   "source": "closed",
   "repo_url": "",
-  "audit_tier": "closeout",
+  "audit_tier": "audit",
   "audit_date": "2026-09-19",
   "found": 18,
   "fixed": 14,
