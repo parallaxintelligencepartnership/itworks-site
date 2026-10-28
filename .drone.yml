@@ -1,0 +1,75 @@
+# itworks.build pipelines (P30, 2026-10-27). Gitea is where the team works and
+# main is protected there: changes arrive as pull requests from the team's
+# Software Engineer, the Code Reviewer merges, and the merge (a push to main)
+# deploys. Matt's own pushes to main deploy the same way.
+#
+# The site itself is still built and served by GitHub: deploy/publish-github.sh
+# pushes main to the GitHub repo (fast-forward only), its pages.yml builds and
+# deploys GitHub Pages on that push, and deploy/live-check.sh then proves the
+# live site serves exactly what this commit builds. Outside entries still
+# arrive as pull requests on GitHub (check.yml); one merged there must be
+# brought into Gitea main before the next deploy (publish says how).
+
+kind: pipeline
+type: docker
+name: pr-check
+
+trigger:
+  event:
+    - pull_request
+
+steps:
+  # the gates of SHIPPED.md and check.yml; approval dates come from git
+  # history, so a shallow clone is deepened first (the build refuses one)
+  - name: go
+    image: golang:1.26.10-bookworm
+    commands:
+      - if [ -f .git/shallow ]; then git fetch --unshallow --quiet origin; fi
+      - test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - go vet ./...
+      - go test ./...
+      - go run ./cmd/build -check
+      - go run ./cmd/build -out /tmp/dist
+
+  - name: embed
+    image: node:24.22.0-bookworm
+    commands:
+      - node --test web/static/embed_test.mjs
+
+---
+kind: pipeline
+type: docker
+name: deploy
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+steps:
+  - name: go
+    image: golang:1.26.10-bookworm
+    commands:
+      - if [ -f .git/shallow ]; then git fetch --unshallow --quiet origin; fi
+      - test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - go vet ./...
+      - go test ./...
+      - go run ./cmd/build -check
+      - go run ./cmd/build -out /tmp/dist
+
+  - name: embed
+    image: node:24.22.0-bookworm
+    commands:
+      - node --test web/static/embed_test.mjs
+
+  # GitHub Pages rebuilds on the push (pages.yml), about 1 to 3 minutes; the
+  # live check waits for a build newer than the push, then compares every file
+  - name: publish
+    image: golang:1.26.10-bookworm
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_itworks_token
+    commands:
+      - bash deploy/publish-github.sh | tee /tmp/publish.out
+      - bash deploy/live-check.sh "$(tail -n 1 /tmp/publish.out)"

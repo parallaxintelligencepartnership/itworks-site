@@ -11,10 +11,12 @@ A public wall of apps that were finished through the itworks plugin's closeout, 
 - Approval dates come from the commit that added each entry file, so the checkout needs full history. A shallow checkout is rejected by the build on purpose.
 
 ## How to deploy an update
-1. Work on a branch, open a pull request; `check.yml` runs the tests and the entries-only policy.
-2. Merge to `main` (squash merge; the repo allows no other method, so the approval date is the merge time and cannot be set by a submitter).
-3. `pages.yml` builds and deploys automatically on the push to main, again every day at 05:17 UTC, and on demand from the Actions tab.
-4. Confirm: `curl -sI https://itworks.build/ | head -1` is 200, and `curl -s https://itworks.build/api/entries.json | grep built_at` shows the new build time.
+The team path (since 2026-10-27, P30): Gitea `ParallaxIntelligence/itworks-site` is where the team works, and its `main` is protected.
+1. Work on a branch and open a pull request on Gitea; Drone `pr-check` runs gofmt, go vet, the tests, the entries check, a full build and the embed test.
+2. The Code Reviewer (or Matt) merges it. Drone `deploy` on the push to `main` runs the same gates, then `deploy/publish-github.sh` pushes `main` to the GitHub repo (fast-forward only, with the Drone secret `github_itworks_token`), `pages.yml` builds and deploys GitHub Pages on that push, and `deploy/live-check.sh` waits for the new build and compares every live file with this commit's build.
+3. Outside entries still arrive as pull requests on GitHub (`check.yml`). One merged there must come into Gitea `main` by pull request before the next team deploy; the publish step refuses and says how.
+The GitHub path on its own still works as before: `pages.yml` builds and deploys on every push to GitHub main, every day at 05:17 UTC, and on demand from the Actions tab.
+Confirm by hand: `bash deploy/live-check.sh`, or `curl -sI https://itworks.build/ | head -1` is 200 and `curl -s https://itworks.build/api/entries.json | grep built_at` shows the new build time.
 DNS records and the Pages settings are in the section below.
 
 ## DNS and Pages settings
