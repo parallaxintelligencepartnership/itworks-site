@@ -203,13 +203,13 @@ func TestBuildFeedRoundTripsThroughValidation(t *testing.T) {
 		}
 		for _, key := range []string{"id", "name", "summary", "source", "repo_url", "audit_tier",
 			"audit_date", "found", "fixed", "accepted", "critical_open", "critical_accepted",
-			"age_days", "badge_color", "badge_url", "entry_url"} {
+			"age_days", "badge_color", "badge_note", "badge_url", "entry_url"} {
 			if _, ok := shape[key]; !ok {
 				t.Fatalf("entries.json is missing the %s field", key)
 			}
 		}
-		if len(shape) != 16 {
-			t.Fatalf("entries.json carries %d fields, want the 16 of the published shape", len(shape))
+		if len(shape) != 17 {
+			t.Fatalf("entries.json carries %d fields, want the 17 of the published shape", len(shape))
 		}
 	}
 }
@@ -848,6 +848,78 @@ func TestFooterCarriesTheRecordAndFollowsItsLinks(t *testing.T) {
 		}
 		if strings.Contains(foot, ">Parallax<") {
 			t.Fatalf("%s footer uses the bare word Parallax as a heading", name)
+		}
+	}
+}
+
+// Matt, 2026-11-07 (teardown Q-A): an entry with no full audit is amber,
+// never green, and the badge does not name the tier. A fresh checkpoint or
+// closeout date must not read as current.
+func TestNoFullAuditIsAmber(t *testing.T) {
+	today := time.Date(2026, 9, 16, 0, 0, 0, 0, time.UTC)
+	entries := []entry.Entry{
+		{
+			ID: "closeoutonly", Name: "Closeout Only", Summary: "closeout today, no full audit",
+			Source: "public", AuditTier: "closeout", AuditDate: "2026-09-16",
+			Found: 1, Fixed: 1, ApprovedAt: today,
+		},
+		{
+			ID: "checkpointo1", Name: "Checkpoint Only", Summary: "checkpoint today, no full audit",
+			Source: "public", AuditTier: "checkpoint", AuditDate: "2026-09-16",
+			Found: 1, Fixed: 1, ApprovedAt: today,
+		},
+		{
+			ID: "fullaudit001", Name: "Full Audit", Summary: "full audit today",
+			Source: "public", AuditTier: "audit", AuditDate: "2026-09-16",
+			Found: 1, Fixed: 1, ApprovedAt: today,
+		},
+		{
+			ID: "closeoutcrit", Name: "Closeout Crit", Summary: "closeout, one critical open",
+			Source: "public", AuditTier: "closeout", AuditDate: "2026-09-16",
+			Found: 1, CriticalOpen: 1, ApprovedAt: today,
+		},
+	}
+	out := t.TempDir()
+	if err := render(entries, out, today); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+
+	for _, id := range []string{"closeoutonly", "checkpointo1"} {
+		svg := readFile(t, out, "badge", id+".svg")
+		if !strings.Contains(svg, "#d29922") {
+			t.Errorf("%s: badge is not amber:\n%s", id, svg)
+		}
+		if !strings.Contains(svg, "no full audit") {
+			t.Errorf("%s: badge does not say no full audit:\n%s", id, svg)
+		}
+		if strings.Contains(svg, "closeout") || strings.Contains(svg, "checkpoint") {
+			t.Errorf("%s: badge names the tier:\n%s", id, svg)
+		}
+		page := readFile(t, out, "e", id, "index.html")
+		if !strings.Contains(page, "reads no full audit") {
+			t.Errorf("%s: entry page does not read \"no full audit\"", id)
+		}
+	}
+	if svg := readFile(t, out, "badge", "fullaudit001.svg"); !strings.Contains(svg, "#1a7f37") {
+		t.Errorf("full audit today is not green:\n%s", svg)
+	}
+	if svg := readFile(t, out, "badge", "closeoutcrit.svg"); !strings.Contains(svg, "#b3261e") {
+		t.Errorf("an open critical is not red when there is no full audit:\n%s", svg)
+	}
+
+	var feed struct {
+		Entries []struct {
+			ID         string `json:"id"`
+			BadgeColor string `json:"badge_color"`
+			BadgeNote  string `json:"badge_note"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal([]byte(readFile(t, out, "api", "entries.json")), &feed); err != nil {
+		t.Fatalf("feed: %v", err)
+	}
+	for _, e := range feed.Entries {
+		if e.ID == "closeoutonly" && (e.BadgeColor != "amber" || e.BadgeNote != "no full audit") {
+			t.Errorf("feed for closeoutonly: color %q note %q", e.BadgeColor, e.BadgeNote)
 		}
 	}
 }

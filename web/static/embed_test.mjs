@@ -176,3 +176,43 @@ test("a valid entry renders safely from its id alone", async () => {
   assert.ok(text.includes("critical open"));
   assert.ok(text.includes("1 critical open"));
 });
+
+test("an amber entry with no full audit reads no full audit, other notes read stale", async () => {
+  function feed(note) {
+    return function () {
+      return Promise.resolve({
+        ok: true,
+        json: function () {
+          return Promise.resolve({
+            entries: [
+              {
+                id: "abc234defg56",
+                name: "n",
+                summary: "s",
+                audit_tier: "closeout",
+                audit_date: "2026-01-01",
+                badge_color: "amber",
+                badge_note: note,
+                critical_open: 0,
+                critical_accepted: 0,
+              },
+            ],
+          });
+        },
+      });
+    };
+  }
+  const noAudit = await run(feed("no full audit"));
+  const noAuditList = noAudit.children.find(function (c) {
+    return c.tagName === "ol";
+  });
+  assert.ok(collectText(noAuditList.children[0]).includes("no full audit"));
+
+  const hostile = await run(feed("<b>pwned</b>"));
+  const hostileList = hostile.children.find(function (c) {
+    return c.tagName === "ol";
+  });
+  const text = collectText(hostileList.children[0]);
+  assert.ok(text.includes("stale"));
+  assert.ok(!text.includes("pwned"));
+});

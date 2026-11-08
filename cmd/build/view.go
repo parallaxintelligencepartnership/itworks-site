@@ -49,6 +49,7 @@ type view struct {
 	CriticalTotal    int    `json:"-"`
 	AgeDays          int    `json:"age_days"`
 	BadgeColor       string `json:"badge_color"`
+	BadgeNote        string `json:"badge_note"`
 	BadgeURL         string `json:"badge_url"`
 	EntryURL         string `json:"entry_url"`
 
@@ -69,7 +70,7 @@ type view struct {
 
 func toView(e entry.Entry, today time.Time) view {
 	auditDate, _ := time.Parse("2006-01-02", e.AuditDate)
-	color := badge.Color(auditDate, e.Critical(), today)
+	color, note := badge.Status(e.AuditTier, auditDate, e.Critical(), today)
 	return view{
 		ID:               e.ID,
 		Name:             e.Name,
@@ -86,12 +87,13 @@ func toView(e entry.Entry, today time.Time) view {
 		CriticalTotal:    e.CriticalOpen + e.CriticalAccepted,
 		AgeDays:          ageInDays(auditDate, today),
 		BadgeColor:       color,
+		BadgeNote:        note,
 		BadgeURL:         baseURL + "/badge/" + e.ID + ".svg",
 		EntryURL:         baseURL + "/e/" + e.ID + "/",
 		BadgePath:        "/badge/" + e.ID + ".svg",
 		EntryPath:        "/e/" + e.ID + "/",
-		State:            stateWords(color),
-		Flap:             stateFlap(color),
+		State:            stateWords(color, note),
+		Flap:             stateFlap(color, note),
 		ApprovedAt:       e.ApprovedAt,
 	}
 }
@@ -104,11 +106,14 @@ func ageInDays(auditDate, now time.Time) int {
 
 // stateWords is the state a visitor reads, spelled out. The badge color is
 // never the only carrier of the state on a page.
-func stateWords(color string) string {
+func stateWords(color, note string) string {
 	switch color {
 	case badge.ColorRed:
 		return "critical open"
 	case badge.ColorAmber:
+		if note == badge.NoteNoFullAudit {
+			return badge.NoteNoFullAudit
+		}
 		return "stale, over 30 days"
 	default:
 		return "current"
@@ -131,11 +136,14 @@ type flapCell struct {
 	Space bool
 }
 
-func stateFlap(color string) flap {
+func stateFlap(color, note string) flap {
 	switch color {
 	case badge.ColorRed:
 		return newFlap("f-crit", "CRITICAL OPEN")
 	case badge.ColorAmber:
+		if note == badge.NoteNoFullAudit {
+			return newFlap("f-stale", "NO FULL AUDIT")
+		}
 		return newFlap("f-stale", "STALE")
 	default:
 		return newFlap("f-cur", "CURRENT")

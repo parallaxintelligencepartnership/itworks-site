@@ -121,7 +121,7 @@ scripts and emoji are all legal.
 {"built_at":"2026-01-31T05:17:00Z",
  "entries":[{"id":"...","name":"...","summary":"...","source":"...","repo_url":"...",
  "audit_tier":"...","audit_date":"YYYY-MM-DD","found":0,"fixed":0,"accepted":0,
- "critical_open":0,"critical_accepted":0,"age_days":0,"badge_color":"green",
+ "critical_open":0,"critical_accepted":0,"age_days":0,"badge_color":"green","badge_note":"",
  "badge_url":"https://itworks.build/badge/<id>.svg","entry_url":"https://itworks.build/e/<id>/"}]}
 ```
 
@@ -143,9 +143,13 @@ The critical count the badge reads is `critical_open + critical_accepted`. A
 critical the owner accepted is not a critical that was fixed, and the badge
 is the honest signal, so an accepted critical keeps the plate red.
 
-`Color`: if the critical count is above zero, "red"; else if the UTC date of
-the reference day minus audit_date is 30 days or more, "amber"; else "green".
-Boundary: 29 days is green, 30 days is amber. Red wins over amber.
+`Status`: if the critical count is above zero, "red"; else if audit_tier is
+not "audit" (a checkpoint or closeout only, so no full audit), "amber" with
+the note "no full audit", whatever the date (Matt, 2026-11-07); else if the
+UTC date of the reference day minus audit_date is 30 days or more, "amber"
+with the note "stale"; else "green". Boundary: 29 days is green, 30 days is
+amber. Red wins over amber. The badge never names the tier. The feed carries
+the note as `badge_note`: "stale", "no full audit", or "" for green and red.
 
 Colors (all pass WCAG AA at 11 px): green plate `#1a7f37` with white text,
 amber plate `#d29922` with ink text `#1f1f1f`, red plate `#b3261e` with white
@@ -159,13 +163,14 @@ white; a 1 px joint hairline; then the state plate carrying a state glyph
 (green: filled disc; amber: diamond; red: triangle) 10 px in, and the text
 12 px after the glyph, 12 px trailing. Right text is
 `<YYYY-MM-DD> · <N> critical` for green and red and
-`<YYYY-MM-DD> · <N> critical · stale` for amber (the middle dot is U+00B7,
+`<YYYY-MM-DD> · <N> critical · <note>` for amber, where the note is `stale`
+or `no full audit` (the middle dot is U+00B7,
 not a dash), so the amber state survives grayscale and a screen reader.
 Font: `-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif`
 600 weight, size 11, with `textLength` pinned to the computed width so layout
 is stable across platforms. `<title>` reads
 `Audit <date>, <N> critical, <color>` (amber:
-`Audit <date>, stale, <N> critical, amber`). No external references in
+`Audit <date>, <note>, <N> critical, amber`). No external references in
 the SVG.
 
 The entry page prints `critical open` and `critical accepted by the owner` as

@@ -50,10 +50,12 @@
     return e;
   }
 
-  // stateWord reads the state from the badge color alone, never a feed field.
-  function stateWord(color) {
+  // stateWord reads the state from the badge color. For amber it also reads
+  // badge_note, but only the one fixed value "no full audit"; anything else
+  // reads as stale, so no feed text is ever shown as the state.
+  function stateWord(color, note) {
     if (color === "green") return "current";
-    if (color === "amber") return "stale";
+    if (color === "amber") return note === "no full audit" ? "no full audit" : "stale";
     if (color === "red") return "critical open";
     return "";
   }
@@ -80,7 +82,7 @@
       if (isNaN(open)) open = 0;
       var accepted = parseInt(entry.critical_accepted, 10);
       if (isNaN(accepted)) accepted = 0;
-      var state = stateWord(entry.badge_color);
+      var state = stateWord(entry.badge_color, entry.badge_note);
       var critText = criticalText(open, accepted);
 
       var item = el("li", "itw-item");

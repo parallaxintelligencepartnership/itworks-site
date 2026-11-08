@@ -78,7 +78,7 @@ GitHub Pages serves every file with `access-control-allow-origin: *`, so
 (see [docs/SPEC.md](docs/SPEC.md#apientriesjson) for its shape: `id`, `name`,
 `summary`, `source`, `repo_url`, `audit_tier`, `audit_date`, `found`,
 `fixed`, `accepted`, `critical_open`, `critical_accepted`, `age_days`,
-`badge_color`, `badge_url`, `entry_url`, plus the feed-level `built_at`). A
+`badge_color`, `badge_note`, `badge_url`, `entry_url`, plus the feed-level `built_at`). A
 build-time fetch of that URL works from any other Parallax site.
 
 For a plain drop-in, add these two lines to a page:

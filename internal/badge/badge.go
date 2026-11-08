@@ -58,6 +58,35 @@ func Color(auditDate time.Time, criticalOpen int, now time.Time) string {
 	return ColorGreen
 }
 
+// The words an amber plate prints after the critical count. Stale means
+// the full audit is 30 days old or more. No full audit means the entry's
+// tier is a checkpoint or a closeout, which the badge never names.
+const (
+	NoteStale       = "stale"
+	NoteNoFullAudit = "no full audit"
+)
+
+// TierAudit is the one audit tier that counts as a full audit.
+const TierAudit = "audit"
+
+// Status returns the badge color and, for amber, the note the plate prints.
+// Red wins. Else an entry with no full audit is amber with NoteNoFullAudit
+// (Matt, 2026-11-07), whatever its date. Else Color decides, and an amber
+// result is stale.
+func Status(tier string, auditDate time.Time, critical int, now time.Time) (color, note string) {
+	if critical > 0 {
+		return ColorRed, ""
+	}
+	if tier != TierAudit {
+		return ColorAmber, NoteNoFullAudit
+	}
+	color = Color(auditDate, critical, now)
+	if color == ColorAmber {
+		return color, NoteStale
+	}
+	return color, ""
+}
+
 func hexFor(color string) string {
 	switch color {
 	case ColorRed:
@@ -108,7 +137,13 @@ func glyph(color string, cx float64) string {
 // display, criticalOpen the open critical count, and color one of "green",
 // "amber", "red" (the state plate fill).
 func Render(date string, criticalOpen int, color string) []byte {
-	return render(date, criticalOpen, color, false)
+	return render(date, criticalOpen, color, NoteStale, false)
+}
+
+// RenderNote is Render with the amber note given (NoteStale or
+// NoteNoFullAudit). Any other note on an amber plate prints as stale.
+func RenderNote(date string, criticalOpen int, color, note string) []byte {
+	return render(date, criticalOpen, color, note, false)
 }
 
 // RenderExample returns the same Ledger style SVG badge as Render, but
@@ -116,19 +151,22 @@ func Render(date string, criticalOpen int, color string) []byte {
 // the title by "Example: ", so the three plates the landing page shows when
 // the wall is empty never read as a real entry's badge.
 func RenderExample(date string, criticalOpen int, color string) []byte {
-	return render(date, criticalOpen, color, true)
+	return render(date, criticalOpen, color, NoteStale, true)
 }
 
 // render is the shared body of Render and RenderExample, so the two never
 // drift apart.
-func render(date string, criticalOpen int, color string, example bool) []byte {
+func render(date string, criticalOpen int, color, note string, example bool) []byte {
 	// The date is validated upstream, but the SVG is text that leaves the
 	// site, so it is escaped here as well and no caller can ever change that.
 	date = html.EscapeString(date)
 	var rightText, title string
 	if color == ColorAmber {
-		rightText = fmt.Sprintf("%s · %d critical · stale", date, criticalOpen)
-		title = fmt.Sprintf("Audit %s, stale, %d critical, %s", date, criticalOpen, color)
+		if note != NoteNoFullAudit {
+			note = NoteStale
+		}
+		rightText = fmt.Sprintf("%s · %d critical · %s", date, criticalOpen, note)
+		title = fmt.Sprintf("Audit %s, %s, %d critical, %s", date, note, criticalOpen, color)
 	} else {
 		rightText = fmt.Sprintf("%s · %d critical", date, criticalOpen)
 		title = fmt.Sprintf("Audit %s, %d critical, %s", date, criticalOpen, color)

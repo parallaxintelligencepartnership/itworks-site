@@ -234,3 +234,31 @@ func TestRenderEscapesTheDate(t *testing.T) {
 		t.Fatalf("expected the escaped date in the SVG")
 	}
 }
+
+func TestStatusNoFullAuditIsAmber(t *testing.T) {
+	day := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	cases := []struct {
+		tier      string
+		now       time.Time
+		critical  int
+		wantColor string
+		wantNote  string
+	}{
+		{"closeout", day, 0, ColorAmber, NoteNoFullAudit},
+		{"checkpoint", day, 0, ColorAmber, NoteNoFullAudit},
+		{"closeout", day.AddDate(0, 0, 40), 0, ColorAmber, NoteNoFullAudit},
+		{"closeout", day, 1, ColorRed, ""},
+		{"audit", day, 0, ColorGreen, ""},
+		{"audit", day.AddDate(0, 0, 30), 0, ColorAmber, NoteStale},
+	}
+	for _, c := range cases {
+		color, note := Status(c.tier, day, c.critical, c.now)
+		if color != c.wantColor || note != c.wantNote {
+			t.Errorf("Status(%s, crit %d) = %q %q, want %q %q", c.tier, c.critical, color, note, c.wantColor, c.wantNote)
+		}
+	}
+	svg := string(RenderNote("2026-01-01", 0, ColorAmber, NoteNoFullAudit))
+	if !strings.Contains(svg, "0 critical · no full audit") || strings.Contains(svg, "stale") {
+		t.Errorf("no full audit plate text is wrong: %s", svg)
+	}
+}

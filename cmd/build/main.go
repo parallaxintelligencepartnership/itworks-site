@@ -176,7 +176,7 @@ func render(entries []entry.Entry, outDir string, today time.Time) error {
 	}
 
 	for _, e := range views {
-		svg := badge.Render(e.AuditDate, e.CriticalOpen+e.CriticalAccepted, e.BadgeColor)
+		svg := badge.RenderNote(e.AuditDate, e.CriticalOpen+e.CriticalAccepted, e.BadgeColor, e.BadgeNote)
 		if err := writeFile(outDir, filepath.Join("badge", e.ID+".svg"), svg); err != nil {
 			return err
 		}
