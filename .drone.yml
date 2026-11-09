@@ -68,8 +68,8 @@ steps:
   - name: publish
     image: golang:1.26.10-bookworm
     environment:
-      GITHUB_TOKEN:
-        from_secret: github_itworks_token
+      GITHUB_DEPLOY_KEY:
+        from_secret: github_itworks_deploy_key
     commands:
       - bash deploy/publish-github.sh | tee /tmp/publish.out
       - bash deploy/live-check.sh "$(tail -n 1 /tmp/publish.out)"

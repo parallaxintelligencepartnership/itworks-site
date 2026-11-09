@@ -5,8 +5,10 @@ on:
     branches: [main]
   # The badge turns amber on the thirtieth day after an audit, so the site
   # is rebuilt every day even when nothing changed.
+  # Minute moved from 17 to 23 on 2026-11-08 to re-register the schedule,
+  # which had not fired since 2026-09-19.
   schedule:
-    - cron: "17 5 * * *"
+    - cron: "23 5 * * *"
   workflow_dispatch:
 
 concurrency:
