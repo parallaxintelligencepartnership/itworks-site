@@ -317,7 +317,7 @@ func clip(s string, n int) string {
 func siteJSONLD() (template.JS, error) {
 	org := map[string]any{
 		"@type": "Organization",
-		"@id":   orgURL + "#organization",
+		"@id":   orgURL + "/#org",
 		"name":  orgName,
 		"url":   orgURL,
 		"email": orgEmail,
@@ -339,7 +339,7 @@ func siteJSONLD() (template.JS, error) {
 		"@id":       baseURL + "#website",
 		"name":      siteName,
 		"url":       baseURL,
-		"publisher": map[string]any{"@id": orgURL + "#organization"},
+		"publisher": map[string]any{"@id": orgURL + "/#org"},
 	}
 	doc := map[string]any{
 		"@context": "https://schema.org",
